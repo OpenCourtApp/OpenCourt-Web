@@ -1,12 +1,11 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { NavMain } from '@/components/nav-main'
 import type { NavItem } from '@/components/nav-main'
 import { NavSchoolSwitcher } from '@/components/nav-school-switcher'
-import { OpenCourtLogo, OpenCourtMark } from '@/components/shared/oc-logo'
+import { NavUser } from '@/components/nav-user'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
   Sidebar,
@@ -32,7 +31,8 @@ const navItems: NavItem[] = [
   { title: 'Collaborators',  url: '/collaborators', icon: <RiTeamLine /> },
 ]
 
-function NavSwitcherSkeleton() {
+/** Avatar + two lines, collapses to the avatar-sized square in icon mode. */
+function NavRowSkeleton() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -51,6 +51,7 @@ function NavSwitcherSkeleton() {
 type SidebarData = {
   schools: UserSchool[]
   activeSchoolId: string | null
+  user: { name: string; email: string; role: Role }
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -67,10 +68,17 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         (authData.user.user_metadata?.active_school_id as string | undefined) ??
         null
 
-      const { data: memberships } = await supabase
-        .from('memberships')
-        .select('school_id, role, schools(name)')
-        .eq('user_id', authData.user.id)
+      const [{ data: profile }, { data: memberships }] = await Promise.all([
+        supabase
+          .from('users')
+          .select('full_name, email')
+          .eq('id', authData.user.id)
+          .single(),
+        supabase
+          .from('memberships')
+          .select('school_id, role, schools(name)')
+          .eq('user_id', authData.user.id),
+      ])
 
       const schools: UserSchool[] = (memberships ?? []).map((m) => ({
         school_id:   m.school_id,
@@ -78,7 +86,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         role:        m.role as Role,
       }))
 
-      setData({ schools, activeSchoolId })
+      const role =
+        ((memberships ?? []).find((m) => m.school_id === activeSchoolId)
+          ?.role as Role | undefined) ?? 'teacher'
+
+      setData({
+        schools,
+        activeSchoolId,
+        user: {
+          name:  profile?.full_name ?? authData.user.email ?? '',
+          email: profile?.email ?? authData.user.email ?? '',
+          role,
+        },
+      })
     }
 
     load()
@@ -86,32 +106,23 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
+      {/* Workspace context at the top — the school switcher doubles as branding */}
       <SidebarHeader>
-        <Link
-          href="/dashboard"
-          aria-label="Go to dashboard"
-          className="relative flex h-12 items-center rounded-lg px-4 outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-2"
-        >
-          <div className="transition-all duration-200 ease-out delay-200 group-data-[collapsible=icon]:duration-0 group-data-[collapsible=icon]:delay-0 opacity-100 group-data-[collapsible=icon]:opacity-0 group-data-[collapsible=icon]:pointer-events-none">
-            <OpenCourtLogo className="h-5 w-auto text-sidebar-foreground" />
-          </div>
-          <div className="transition-all duration-200 ease-out delay-0 group-data-[collapsible=icon]:delay-200 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center opacity-0 group-data-[collapsible=icon]:opacity-100 pointer-events-none group-data-[collapsible=icon]:pointer-events-auto">
-            <OpenCourtMark className="size-7 text-sidebar-foreground" />
-          </div>
-        </Link>
-      </SidebarHeader>
-      <SidebarContent>
-        <NavMain items={navItems} />
-      </SidebarContent>
-      <SidebarFooter>
         {data ? (
           <NavSchoolSwitcher
             schools={data.schools}
             activeSchoolId={data.activeSchoolId}
           />
         ) : (
-          <NavSwitcherSkeleton />
+          <NavRowSkeleton />
         )}
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={navItems} />
+      </SidebarContent>
+      {/* Personal account at the bottom */}
+      <SidebarFooter>
+        {data ? <NavUser user={data.user} /> : <NavRowSkeleton />}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

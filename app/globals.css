@@ -143,3 +143,44 @@
     opacity: 0;
   }
 }
+
+/* ── Mouse-tracking border glow (subtle) ─────────────────────────────
+   A single thin gradient arc rides the card border, lit only on the side
+   nearest the cursor. JS sets --start to the pointer angle. */
+@property --start {
+  syntax: "<number>";
+  initial-value: 0;
+  inherits: true;
+}
+
+.glow-card {
+  --start: 0;
+  position: relative;
+}
+
+.glow-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1.5px solid transparent;
+  background: var(--primary);
+  background-attachment: fixed;
+  mask:
+    linear-gradient(#0000, #0000),
+    conic-gradient(
+      from calc((var(--start) - 22) * 1deg),
+      #0000 0deg,
+      #fff,
+      #0000 80deg
+    );
+  mask-composite: intersect;
+  mask-clip: padding-box, border-box;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.glow-card:hover::before {
+  opacity: 0.35;
+}

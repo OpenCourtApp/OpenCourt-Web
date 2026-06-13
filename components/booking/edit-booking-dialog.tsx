@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { toast } from 'sonner'
-import { updateBooking } from '@/lib/bookings/actions'
+import { RiDeleteBinLine } from '@remixicon/react'
+import { deleteBooking, updateBooking } from '@/lib/bookings/actions'
 import {
   updateBookingSchema,
   type UpdateBookingInput,
@@ -33,12 +34,16 @@ import {
 
 export function EditBookingDialog({
   booking,
+  canManage,
   onOpenChange,
 }: {
   booking: BookingRecord | null
+  canManage: boolean
   onOpenChange: (open: boolean) => void
 }) {
   const { courts, refresh } = useBookings()
+  const [confirmingDelete, setConfirmingDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   const {
     register,
@@ -61,6 +66,7 @@ export function EditBookingDialog({
 
   // Re-seed the form whenever a different booking is opened.
   useEffect(() => {
+    setConfirmingDelete(false)
     if (!booking) return
     reset({
       id: booking.id,
@@ -74,6 +80,7 @@ export function EditBookingDialog({
   }, [booking, reset])
 
   const onSubmit = handleSubmit(async (values) => {
+    if (!canManage) return
     const result = await updateBooking(values)
     if (result?.error) {
       toast.error(result.error)
@@ -84,13 +91,31 @@ export function EditBookingDialog({
     toast.success('Booking updated')
   })
 
+  async function handleDelete() {
+    if (!booking) return
+    setDeleting(true)
+    const result = await deleteBooking(booking.id)
+    setDeleting(false)
+    if (result?.error) {
+      toast.error(result.error)
+      return
+    }
+    await refresh()
+    onOpenChange(false)
+    toast.success('Booking deleted')
+  }
+
+  const busy = isSubmitting || deleting
+
   return (
     <Dialog open={booking !== null} onOpenChange={onOpenChange}>
       <DialogContent className="duration-75 data-open:slide-in-from-bottom-1 data-open:zoom-in-98">
         <DialogHeader>
-          <DialogTitle>Edit booking</DialogTitle>
+          <DialogTitle>{canManage ? 'Edit booking' : 'Booking details'}</DialogTitle>
           <DialogDescription>
-            Update the title, court, day or time slot for this session.
+            {canManage
+              ? 'Update the title, court, day or time slot for this session.'
+              : `Booked by ${booking?.professor || 'another member'}. You can only change your own bookings.`}
           </DialogDescription>
         </DialogHeader>
 
@@ -100,6 +125,7 @@ export function EditBookingDialog({
             <Input
               id="edit-booking-title"
               autoComplete="off"
+              disabled={!canManage}
               aria-invalid={!!errors.title}
               {...register('title')}
             />
@@ -114,7 +140,11 @@ export function EditBookingDialog({
               name="courtId"
               control={control}
               render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
+                <Select
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  disabled={!canManage}
+                >
                   <SelectTrigger id="edit-booking-court" aria-invalid={!!errors.courtId}>
                     <SelectValue placeholder="Select a court" />
                   </SelectTrigger>
@@ -138,6 +168,7 @@ export function EditBookingDialog({
             <Input
               id="edit-booking-date"
               type="date"
+              disabled={!canManage}
               aria-invalid={!!errors.date}
               {...register('date')}
             />
@@ -152,6 +183,7 @@ export function EditBookingDialog({
               <Input
                 id="edit-booking-start"
                 type="time"
+                disabled={!canManage}
                 aria-invalid={!!errors.startTime}
                 {...register('startTime')}
               />
@@ -166,6 +198,7 @@ export function EditBookingDialog({
               <Input
                 id="edit-booking-end"
                 type="time"
+                disabled={!canManage}
                 aria-invalid={!!errors.endTime}
                 {...register('endTime')}
               />
@@ -184,20 +217,69 @@ export function EditBookingDialog({
             <Textarea
               id="edit-booking-notes"
               rows={3}
+              disabled={!canManage}
               {...register('notes')}
             />
           </div>
 
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={isSubmitting}>
-                Cancel
-              </Button>
-            </DialogClose>
-            <Button type="submit" disabled={isSubmitting}>
-              Save changes
-            </Button>
-          </DialogFooter>
+          {canManage ? (
+            confirmingDelete ? (
+              <DialogFooter className="sm:justify-between">
+                <span className="text-sm text-muted-foreground">
+                  Delete this booking?
+                </span>
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={busy}
+                    onClick={() => setConfirmingDelete(false)}
+                  >
+                    Keep
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    disabled={busy}
+                    onClick={handleDelete}
+                  >
+                    Delete
+                  </Button>
+                </div>
+              </DialogFooter>
+            ) : (
+              <DialogFooter className="sm:justify-between">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="text-destructive hover:text-destructive"
+                  disabled={busy}
+                  onClick={() => setConfirmingDelete(true)}
+                >
+                  <RiDeleteBinLine className="size-4" />
+                  Delete
+                </Button>
+                <div className="flex gap-2">
+                  <DialogClose asChild>
+                    <Button type="button" variant="outline" disabled={busy}>
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit" disabled={busy}>
+                    Save changes
+                  </Button>
+                </div>
+              </DialogFooter>
+            )
+          ) : (
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  Close
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          )}
         </form>
       </DialogContent>
     </Dialog>

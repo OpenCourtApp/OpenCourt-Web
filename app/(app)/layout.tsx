@@ -2,8 +2,6 @@
 
 import { SidebarProvider, SidebarInset, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/app-sidebar'
-import { HeaderUser } from '@/components/header-user'
-import { Separator } from '@/components/ui/separator'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { HeaderProvider, useHeader } from '@/components/shared/header-context'
 import { BookingsProvider } from '@/components/booking/bookings-provider'
@@ -22,11 +20,7 @@ function HeaderBar() {
             <p className="truncate text-xs text-muted-foreground">{content.description}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-3">
-          {content.cta && <div>{content.cta}</div>}
-          <Separator orientation="vertical" />
-          <HeaderUser />
-        </div>
+        {content.cta && <div className="shrink-0">{content.cta}</div>}
       </div>
     </header>
   )

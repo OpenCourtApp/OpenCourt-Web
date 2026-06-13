@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -22,6 +22,16 @@ function fmtLocal(date: Date, offset = 0) {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
+}
+
+// Light the border arc nearest the cursor by feeding the pointer angle to CSS.
+function handleGlow(e: MouseEvent<HTMLDivElement>) {
+  const el = e.currentTarget
+  const rect = el.getBoundingClientRect()
+  const x = e.clientX - rect.left - rect.width / 2
+  const y = e.clientY - rect.top - rect.height / 2
+  const angle = (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360
+  el.style.setProperty('--start', String(angle + 60))
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
@@ -100,17 +110,17 @@ export function StatsRow() {
   }, [bookings, courts, now])
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 motion-safe:[&>*]:animate-in motion-safe:[&>*]:fade-in-0 motion-safe:[&>*]:slide-in-from-bottom-2 motion-safe:[&>*]:duration-300 motion-safe:[&>*:nth-child(2)]:delay-75 motion-safe:[&>*:nth-child(3)]:delay-150">
       {/* On Court Now */}
-      <Card size="sm">
+      <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
             <StatLabel>On Court Now</StatLabel>
             {stats.live ? (
-              <Badge className="bg-success/10 text-success">
-                <span className="relative flex size-1.5">
-                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-75" />
-                  <span className="relative inline-flex size-1.5 rounded-full bg-success" />
+              <Badge className="gap-1.5 bg-success/15 text-success">
+                <span className="relative flex size-2">
+                  <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-80" />
+                  <span className="relative inline-flex size-2 rounded-full bg-success shadow-[0_0_8px_var(--success)]" />
                 </span>
                 Live
               </Badge>
@@ -149,7 +159,7 @@ export function StatsRow() {
       </Card>
 
       {/* Today's Bookings */}
-      <Card size="sm">
+      <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
             <StatLabel>Today&apos;s Bookings</StatLabel>
@@ -228,7 +238,7 @@ export function StatsRow() {
       </Card>
 
       {/* Available Slots */}
-      <Card size="sm">
+      <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
             <StatLabel>Available Slots</StatLabel>

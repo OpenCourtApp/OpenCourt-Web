@@ -43,12 +43,19 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 ## Sidebar (`components/app-sidebar.tsx`)
 
 - `collapsible="icon"` — collapses to icon-only mode
-- **Header:** OpenCourt SVG logo via `OpenCourtLogo` / `OpenCourtMark` from `components/shared/oc-logo.tsx`
-  - Expanded: full horizontal logo (`h-5 w-auto`)
-  - Collapsed: compact "O" mark (`size-7`)
-  - Transition: sequential fade (expanding: icon fades out → full logo fades in; collapsing: full logo disappears instantly → icon fades in after 200ms)
-- **Nav:** `NavMain` with 3 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Collaborators (`RiTeamLine`)
-- **Footer:** `NavUser` — avatar with initials, name, role; dropdown with Settings link + Log out. Shows a `Skeleton` placeholder while the profile loads.
+- **Placement convention:** workspace context at the top, personal account at the
+  bottom — the Notion/Linear/Slack/Vercel pattern. For a multi-school product the
+  active-school context is the primary orientation, so the school switcher leads and
+  doubles as branding (no standalone product logo in the sidebar). The account lives
+  only here — there is no user menu in the top header bar (it carries title/CTA only).
+- **Header:** `NavSchoolSwitcher` — `OpenCourtMark` in a rounded square + active
+  school name + role + `RiExpandUpDownLine`; collapses to the mark only in icon mode.
+  Dropdown opens **downward** (`side="bottom"`): Schools list (`RiCheckLine` on active)
+  + "Create organization". `NavRowSkeleton` placeholder while data loads.
+- **Nav:** `NavMain` with 4 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Courts (`RiBasketballLine`), Collaborators (`RiTeamLine`)
+- **Footer:** `NavUser` — avatar (initials) + name + role; collapses to avatar-only in
+  icon mode; dropdown opens to the side (`side="right"`) with Settings + Log out.
+  `NavRowSkeleton` placeholder while the profile loads.
 - `SidebarRail` for manual resize handle
 
 ## `components/nav-main.tsx`

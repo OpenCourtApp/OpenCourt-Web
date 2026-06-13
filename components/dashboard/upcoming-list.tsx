@@ -110,8 +110,8 @@ export function UpcomingList() {
                   </div>
                   <div className="flex shrink-0 items-center">
                     {b.live ? (
-                      <span className="flex items-center gap-1 text-xs font-medium tabular-nums text-primary">
-                        <RiPlayMiniFill className="size-3.5" />
+                      <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[0.7rem] font-medium tabular-nums text-primary ring-1 ring-inset ring-primary/20">
+                        <RiPlayMiniFill className="size-3" />
                         {durationLabel(b.endsIn)} left
                       </span>
                     ) : (

@@ -86,8 +86,8 @@ export function NewBookingDialog() {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button>
-          <RiAddLine className="size-4" />
+        <Button className="group relative overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[150%] before:skew-x-[-20deg] before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent before:transition-transform before:duration-700 before:ease-out hover:before:translate-x-[150%]">
+          <RiAddLine className="size-4 transition-transform duration-200 group-hover:rotate-90" />
           New Booking
         </Button>
       </DialogTrigger>
