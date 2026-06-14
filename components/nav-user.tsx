@@ -5,6 +5,7 @@ import { signOut } from '@/lib/auth/actions'
 import {
   Avatar,
   AvatarFallback,
+  AvatarImage,
 } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import {
@@ -32,6 +33,7 @@ export function NavUser({
     name: string
     email: string
     role: Role
+    avatarUrl?: string | null
   }
 }) {
   const { isMobile } = useSidebar()
@@ -55,8 +57,15 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="size-8 shrink-0 rounded-lg">
-                <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
+              <Avatar className="size-8 shrink-0 rounded-full">
+                {user.avatarUrl && (
+                  <AvatarImage
+                    src={user.avatarUrl}
+                    alt={user.name}
+                    className="rounded-full"
+                  />
+                )}
+                <AvatarFallback className="rounded-full">{initials}</AvatarFallback>
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-medium">{user.name}</span>
@@ -73,8 +82,15 @@ export function NavUser({
           >
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-3 px-2 py-2 text-left text-sm">
-                <Avatar className="size-9 rounded-lg">
-                  <AvatarFallback className="rounded-lg bg-muted text-muted-foreground">
+                <Avatar className="size-9 rounded-full">
+                  {user.avatarUrl && (
+                    <AvatarImage
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="rounded-full"
+                    />
+                  )}
+                  <AvatarFallback className="rounded-full bg-muted text-muted-foreground">
                     {initials}
                   </AvatarFallback>
                 </Avatar>

@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { acceptInvitation } from '@/lib/auth/actions'
 import {
   acceptInvitationSchema,
+  acceptInvitationWithPasswordSchema,
   PASSWORD_HINT,
   type AcceptInvitationInput,
 } from '@/lib/auth/validation'
@@ -50,7 +51,10 @@ export function WelcomeForm({
     handleSubmit,
     formState: { errors },
   } = useForm<AcceptInvitationInput>({
-    resolver: zodResolver(acceptInvitationSchema),
+    // Google invitees only confirm their name; everyone else must set a password.
+    resolver: zodResolver(
+      isGoogleUser ? acceptInvitationSchema : acceptInvitationWithPasswordSchema
+    ),
     mode: 'onChange',
     defaultValues: { fullName: defaultFullName, password: '' },
   })
@@ -115,10 +119,7 @@ export function WelcomeForm({
 
           {!isGoogleUser && (
             <div className="grid gap-2">
-              <Label htmlFor="welcome-password">
-                Set a password{' '}
-                <span className="text-muted-foreground">(optional)</span>
-              </Label>
+              <Label htmlFor="welcome-password">Set a password</Label>
               <Input
                 id="welcome-password"
                 type="password"

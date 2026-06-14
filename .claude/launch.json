@@ -7,6 +7,13 @@
       "runtimeArgs": ["node_modules/next/dist/bin/next", "dev"],
       "port": 3000,
       "autoPort": true
+    },
+    {
+      "name": "opencourt-prod",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "start"],
+      "port": 3000,
+      "autoPort": true
     }
   ]
 }

@@ -112,7 +112,14 @@ export async function acceptInvitation(
     redirect('/login')
   }
 
-  // Set password when the invitee came via email link and wants one
+  // Google invitees authenticate via Google and set no password. Everyone else
+  // (the email-invite link) must choose one — it becomes their only credential,
+  // since the invite link is single-use and expires.
+  const isGoogleUser = user.app_metadata?.provider === 'google'
+  if (!isGoogleUser && !parsed.data.password) {
+    return { error: 'Choose a password to finish setting up your account.' }
+  }
+
   if (parsed.data.password) {
     const { error: pwError } = await supabase.auth.updateUser({
       password: parsed.data.password,

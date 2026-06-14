@@ -51,7 +51,7 @@ function NavRowSkeleton() {
 type SidebarData = {
   schools: UserSchool[]
   activeSchoolId: string | null
-  user: { name: string; email: string; role: Role }
+  user: { name: string; email: string; role: Role; avatarUrl: string | null }
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -90,6 +90,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         ((memberships ?? []).find((m) => m.school_id === activeSchoolId)
           ?.role as Role | undefined) ?? 'teacher'
 
+      // Avatar lives in auth metadata: the uploaded URL (email+password users,
+      // set in Settings → Profile) or the Google identity photo.
+      const meta = authData.user.user_metadata ?? {}
+      const avatarUrl =
+        (meta.avatar_url as string | undefined) ??
+        (meta.picture as string | undefined) ??
+        null
+
       setData({
         schools,
         activeSchoolId,
@@ -97,6 +105,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           name:  profile?.full_name ?? authData.user.email ?? '',
           email: profile?.email ?? authData.user.email ?? '',
           role,
+          avatarUrl,
         },
       })
     }

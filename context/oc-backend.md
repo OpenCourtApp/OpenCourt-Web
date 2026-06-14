@@ -48,9 +48,10 @@ preflight guard.
 
 ## Auth Layer (`lib/auth/`)
 
-- **`validation.ts`** — `signInSchema`, `signUpSchema`, `magicLinkSchema`,
-  `createSchoolSchema`, `acceptInvitationSchema`, `inviteMemberSchema` + exported
-  types. `joinSchoolSchema` was removed (token-join flow no longer exists).
+- **`validation.ts`** — `signInSchema`, `signUpSchema`, `createSchoolSchema`,
+  `acceptInvitationSchema` (+ `acceptInvitationWithPasswordSchema` for the
+  non-Google welcome form), `inviteMemberSchema` + exported types.
+  `joinSchoolSchema` was removed (token-join flow no longer exists).
 - **`errors.ts`** — `friendlyAuthError(AuthError)`, `friendlyOnboardingError(message)`.
   Known RPC exception keys: `not_authenticated`, `no_invitation`, `already_member`,
   `not_a_member`, `member_already_exists`, `not_authorized`.
@@ -88,39 +89,24 @@ The split:
 > → Authentication → URL Configuration (Site URL + redirect allow-list). Without this the
 > button errors out at Google.
 
-### Magic link (passwordless) — client-initiated, server-completed
-A second authentication method on `/login`, primarily for invited teachers /
-student reps who never set a password. Like Google, it's **not** a server action
-— it runs in the browser so the @supabase/ssr client owns the PKCE verifier:
-
-- **Client:** `components/magic-link-form.tsx` calls the **browser** client
-  `signInWithOtp({ email, options: { emailRedirectTo: '<origin>/auth/callback?
-  next=/dashboard', shouldCreateUser: false } })`, then shows a "Check your
-  email" state (no navigation — delivery is async).
-- **Server (callback):** the emailed link returns to `app/auth/callback/route.ts`
-  with `?code=…` (PKCE) — the **same** route + `exchangeCodeForSession` as OAuth.
-  No `type`-param branching is needed.
-- **Routing after sign-in** (`proxy.ts`, unchanged): magic-link users authenticate
-  with `app_metadata.provider === 'email'`. New invitees have
-  `active_school_id = NULL` → `/onboarding`, which forwards to `/welcome` when a
-  pending invitation exists for their email. There they accept the invite
-  (`accept_invitation`) and may **optionally** set a password — the
-  `!isGoogleUser` password field still renders for `provider === 'email'`, so
-  magic link and password coexist (a user can keep using magic link only, or set
-  a password later in Settings → Profile).
-- **Invite-only is preserved (business rules #1 & #3):** `shouldCreateUser:
-  false` means a magic-link request **never** creates an account — only emails
-  that already exist (invitees pre-registered by `inviteUserByEmail`, or
-  self-registered users) receive a link. Magic link is an auth method, not a
-  join path; role is still set by the inviter via `accept_invitation`. Unknown
-  emails get the same confirmation screen (no account, no email) to avoid
-  enumeration. `validation.ts` exports `magicLinkSchema` (email only).
+### The invitation email *is* the magic link
+There is **no** passwordless login on `/login`. The only magic link in the app
+is the one the principal triggers in Collaborators: `inviteMember` →
+`admin.auth.admin.inviteUserByEmail(email, { redirectTo: origin +
+'/auth/callback?next=/welcome' })`. The invitee clicks it, the callback exchanges
+the PKCE code for a session (`provider === 'email'`), and `proxy.ts` routes them
+to `/welcome` to accept (`accept_invitation`). Invite-only and inviter-set roles
+(business rules #1 & #3) hold because the invite row + RPC are the join path —
+the email link is just authentication. On `/welcome` non-Google invitees **must**
+set a password (it's their only credential); Google invitees set none.
 
 ### `createSchool(input)`
 Calls `create_school` RPC → `refreshSession()` → `redirect('/dashboard')`.
 
 ### `acceptInvitation(input)`
-1. If `password` is provided (non-Google user): `supabase.auth.updateUser({ password })`
+1. Non-Google users (`provider !== 'google'`) **must** provide a password — the
+   action rejects a missing one; then `supabase.auth.updateUser({ password })`.
+   Google users set none.
 2. `supabase.rpc('accept_invitation', { p_full_name })`
 3. `refreshSession()` → `redirect('/dashboard')`
 

@@ -644,7 +644,45 @@ $$;
 REVOKE ALL ON FUNCTION public.remove_member(uuid) FROM PUBLIC, anon;
 GRANT  EXECUTE ON FUNCTION public.remove_member(uuid) TO authenticated;
 
--- 18. Seed data
+-- 18. Avatar storage (public read; users may only write under their own id)
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('avatars', 'avatars', true)
+ON CONFLICT (id) DO NOTHING;
+
+DO $$ BEGIN
+  CREATE POLICY "Avatar images are publicly readable"
+    ON storage.objects FOR SELECT
+    USING (bucket_id = 'avatars');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can upload their own avatar"
+    ON storage.objects FOR INSERT
+    WITH CHECK (
+      bucket_id = 'avatars'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can update their own avatar"
+    ON storage.objects FOR UPDATE
+    USING (
+      bucket_id = 'avatars'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  CREATE POLICY "Users can delete their own avatar"
+    ON storage.objects FOR DELETE
+    USING (
+      bucket_id = 'avatars'
+      AND (storage.foldername(name))[1] = auth.uid()::text
+    );
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+-- 19. Seed data
 INSERT INTO schools (name, access_token)
 VALUES ('Escola Teste', 'OC-ABCD-1234')
 ON CONFLICT (access_token) DO NOTHING;
