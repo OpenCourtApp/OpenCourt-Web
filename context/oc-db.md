@@ -40,6 +40,11 @@ not used for login or access control.
 | active_school_id | uuid        | FK → schools(id) ON DELETE SET NULL (nullable)    |
 | created_at       | timestamptz | DEFAULT now()                                     |
 
+Avatars are **not** a profile column: the photo URL lives in auth metadata
+(`raw_user_meta_data.avatar_url`) — the Google identity photo, or the URL of a
+file uploaded to the **`avatars` storage bucket** (below). Reading from metadata
+means avatar display never depends on a schema migration.
+
 ### Table: `memberships`
 
 | Column     | Type        | Constraints                               |
@@ -100,6 +105,18 @@ RLS: members of the active school can SELECT; INSERT requires
 `booked_by = auth.uid()` and the active school; DELETE allowed to the owner
 or the principal. Overlap prevention is enforced in the `createBooking`
 server action (`lib/bookings/actions.ts`), not by a DB constraint.
+
+---
+
+## Storage
+
+### Bucket `avatars` (public)
+Profile photos for email+password users. **Public read** (so `<img src>` works
+without signed URLs); writes are gated by RLS on `storage.objects`: a user may
+only INSERT/UPDATE/DELETE objects whose first path segment is their own id
+(`(storage.foldername(name))[1] = auth.uid()::text`). Upload path convention:
+`avatars/<user_id>/avatar-<timestamp>.<ext>`. Defined in `seed.sql` and
+`migrations/20260616_avatars.sql`.
 
 ---
 

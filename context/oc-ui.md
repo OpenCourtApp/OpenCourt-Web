@@ -12,6 +12,7 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 ## Theme
 
 - **Mode:** light / dark / system. An inline script in `app/layout.tsx` applies the stored theme class before first paint (no flash); `components/shared/theme-provider.tsx` manages it afterwards and follows OS changes live when "system" is selected. Selector UI lives in Settings → Appearance.
+- **Native controls:** `globals.css` sets `color-scheme: light` on `:root` and `color-scheme: dark` on `.dark`, so browser-rendered UI (the `<input type="date">` / `type="time"` picker icons + popups in the booking dialog, scrollbars, the Big Calendar's native bits) matches the active theme instead of defaulting to light.
 - **Accent + neutrals share one hue (blue-gray slate, hue 240).** This is a strict monochrome: `--primary` and the whole neutral scale derive from the same hue at low chroma, so the UI reads as one engineered material rather than "neutral + brand accent". `--primary` is effectively a dark UI element, not a brand color. Seeded from the app icon (charcoal court lines on a light blue-gray field).
   - `--primary`: `oklch(0.40 0.04 240)` (light) / `oklch(0.72 0.03 240)` (dark). **Contrast note:** light mode = dark primary + near-white `--primary-foreground`; dark mode = light primary + **dark** `--primary-foreground` (`oklch(0.20 0.02 240)`) — white-on-0.72 fails WCAG AA, so the foreground flips. Both pairings clear AA (~6:1).
 - **Neutral scale:** blue-gray (hue 240, was cool Zinc hue ~286 — neutrals and accent now share the hue). Light: `--background oklch(0.99 0.002 240)`, near-white cards `oklch(0.995 0.001 240)`, `--sidebar oklch(0.97 0.004 240)`, `--border oklch(0.91 0.006 240)`. Dark: `--background oklch(0.16 0.006 240)`, cards `0.21`, sidebar `0.185`, hairline borders `oklch(1 0 0 / 8%)` (neutral, unchanged). Chroma stays `> 0` everywhere (never pure gray).
@@ -79,8 +80,10 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 
 ## `components/nav-user.tsx`
 
-- Props: `{ name: string, email: string, role: Role }`
-- Computes initials from first two characters of name (uppercase)
+- Props: `{ name: string, email: string, role: Role, avatarUrl?: string | null }`
+- Renders `AvatarImage` when `avatarUrl` is set, falling back to initials (first
+  two characters of name, uppercase). `avatarUrl` is the uploaded photo
+  (email+password users) or the Google identity photo, resolved in `app-sidebar.tsx`.
 - DropdownMenu:
   - Label: avatar + name + email
   - Settings: Link to `/settings`

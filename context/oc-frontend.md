@@ -20,7 +20,7 @@ app/
 └── (app)/                          # Authenticated + onboarded routes
     ├── layout.tsx                  # SidebarProvider + AppSidebar + HeaderBar
     ├── dashboard/page.tsx          # Stats row, weekly chart, upcoming list
-    ├── calendar/page.tsx           # Placeholder (EmptyState "coming soon")
+    ├── calendar/page.tsx           # BigCalendarView (react-big-calendar)
     ├── collaborators/page.tsx      # Server component → CollaboratorsView
     └── settings/page.tsx           # Profile, Institutions, authorization, notifications, appearance
 ```
@@ -31,28 +31,11 @@ app/
 
 ### Login (`/login`)
 2-column layout. Left: `OpenCourtLogo` + LoginForm. Right: hero image + gradient.
-
-`LoginForm` (`components/login-form.tsx`) is no longer a `<form>` — it's a
-container with a `mode` state (`'password' | 'magic'`) so the two sign-in methods
-can be sibling forms (no nested `<form>`). Below the active form a toggle link
-swaps modes ("Sign in with a magic link instead" ↔ "…with a password instead");
-switching clears `serverError`. The Google button + "Or continue with" divider
-and the "Sign up" link stay visible in both modes.
-
-- **Password mode**: the original email + password form → `signIn()`.
-- **Magic-link mode**: `MagicLinkForm` (`components/magic-link-form.tsx`),
-  email-only (`RiMailLine` adornment) → browser
-  `supabase.auth.signInWithOtp({ email, options: { emailRedirectTo:
-  '<origin>/auth/callback?next=/dashboard', shouldCreateUser: false } })`. On
-  completion it swaps to an inline "Check your email" confirmation
-  (`RiMailCheckLine`) — no navigation (delivery is async). Only
-  `over_request_rate_limit` is surfaced as an error; every other outcome shows
-  the same confirmation so the form can't enumerate which emails have accounts.
-
-Magic link is **not** offered on `/register`: with `shouldCreateUser: false` it
-can't create an account, and self-signup exists only to create a school. It is a
-returning-user convenience and the primary path for invitees who never set a
-password.
+`LoginForm` (`components/login-form.tsx`) is email + password → `signIn()`, plus
+a Google button and a "Sign up" link. There is **no** passwordless/magic-link
+option on `/login`: the only magic link in the app is the principal's email
+invitation (see `inviteMember` / oc-backend.md), which lands invitees on
+`/welcome`.
 
 ### Register (`/register`)
 Single column. `OpenCourtLogo` + SignupForm (Card, max-w-sm).
@@ -95,7 +78,11 @@ Calls `createSchool()`. Sign out escape hatch.
 
 ### `components/auth/welcome-form.tsx`
 Invite acceptance form. Shows org name, role Badge (read-only), Full name input,
-optional password (hidden for Google users). Calls `acceptInvitation()`.
+and a password. Password is **hidden for Google users** and **required for
+everyone else** (it becomes their only credential — the invite link is
+single-use). The resolver switches on `isGoogleUser`
+(`acceptInvitationSchema` vs `acceptInvitationWithPasswordSchema`). Calls
+`acceptInvitation()`.
 
 ---
 
@@ -136,7 +123,7 @@ Flat `Link` items inside `SidebarMenuButton`; active via `usePathname()`.
 | Page            | Status      | Content                                                                          |
 | --------------- | ----------- | -------------------------------------------------------------------------------- |
 | `/dashboard`    | Done        | Stats cards, Recharts bar chart, upcoming today list                             |
-| `/calendar`     | Placeholder | Weekly grid (Mon-Sun), booking cards                                             |
+| `/calendar`     | Done        | Shadcn UI Big Calendar (`components/calendar/big-calendar-view.tsx`) — react-big-calendar with a custom app-themed toolbar + event cells |
 | `/collaborators`| Done        | Combined members + pending invites table, invite dialog, role/status badges      |
 | `/settings`     | Done        | Profile, Institutions switcher, access token (principal only), notifications, appearance |
 
@@ -175,6 +162,16 @@ Fields: Email + Role (Teacher / Student Rep). Submit → `inviteMember` → `toa
 ## Settings (`/settings`)
 
 Scrollspy sidebar nav with sections: Profile · Institutions · Authorization · Notifications · Appearance.
+
+### `components/settings/ProfileForm.tsx`
+Profile section: avatar + Full Name + Email + New Password. The **avatar block**
+shows the current photo (uploaded → Google → initials fallback). Email+password
+users get Upload/Change/Remove controls that PUT the file to the `avatars`
+storage bucket (`<user_id>/avatar-<ts>.<ext>`, max 2 MB, images only), then write
+the public URL to **auth metadata** (`avatar_url`) — no profile column. Google
+users see the photo read-only ("Managed by your Google account"). The avatar
+(circular) appears in the sidebar (`NavUser`) on next load. Password change enforces the signup policy and surfaces
+Supabase errors via `friendlyAuthError`.
 
 ### `components/settings/InstitutionsPanel.tsx`
 Loads user's memberships client-side. Lists schools with role Badge + active indicator

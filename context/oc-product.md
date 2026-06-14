@@ -36,7 +36,7 @@ view occupancy, and manage who has access.
 | `/welcome`       | Accept an email invitation (join a school)        | Done        |
 | `/auth/callback` | OAuth code exchange (route handler)               | Done        |
 | `/dashboard`     | Stats, weekly chart, upcoming list                | Done        |
-| `/calendar`      | Weekly grid view of bookings                      | Placeholder |
+| `/calendar`      | Big Calendar (month/week/day/agenda) of bookings  | Done        |
 | `/collaborators` | Members + pending invites table, invite dialog    | Done        |
 | `/settings`      | Profile, Institutions, access token, notifications| Done        |
 
@@ -63,7 +63,10 @@ Reached via invite link (or directly when signed in with a pending invite).
 Stats row (Court Status, Today's Bookings, Available Slots), weekly Recharts bar chart, upcoming today list. Scoped to the active school.
 
 ### Calendar (`/calendar`)
-Placeholder — weekly grid view planned.
+Month/Week/Day/Agenda views via the Shadcn UI Big Calendar (`react-big-calendar`,
+added from the `list-jonas/shadcn-ui-big-calendar` registry). Events come from
+`useBookings`; clicking one opens the edit dialog; "New booking" lives in the
+header. Owned bookings render in the primary color, others in secondary.
 
 ### Collaborators (`/collaborators`)
 Combined table of active members (from `memberships`) and pending invitations. Client-side search by name/email. "Invite collaborator" dialog (principal only) — fields: Email + Role. Status badges: Active / Pending. Actions: Remove (active non-principal), Resend + Cancel (pending).

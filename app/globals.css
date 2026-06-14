@@ -66,6 +66,9 @@
      error/warning/success signaling.
    ========================================================================== */
 :root {
+  /* Themes native controls (date/time picker icons + popups, scrollbars) to
+     match light mode; `.dark` flips it below. */
+  color-scheme: light;
   --background: oklch(0.99 0 0);
   --foreground: oklch(0.17 0 0);
   --card: oklch(0.995 0 0);
@@ -103,6 +106,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --background: oklch(0.16 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.21 0 0);

@@ -7,27 +7,18 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { signIn } from '@/lib/auth/actions'
 import { signInSchema, type SignInInput } from '@/lib/auth/validation'
 import { GoogleSignInButton } from '@/components/google-sign-in-button'
-import { MagicLinkForm } from '@/components/magic-link-form'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 
-type LoginMode = 'password' | 'magic'
-
-type LoginFormProps = React.ComponentProps<'div'> & {
+type LoginFormProps = React.ComponentProps<'form'> & {
   initialError?: string
 }
 
 export function LoginForm({ initialError, className, ...props }: LoginFormProps) {
   const [serverError, setServerError] = useState(initialError ?? '')
-  const [mode, setMode] = useState<LoginMode>('password')
   const [isPending, startTransition] = useTransition()
-
-  function switchMode(next: LoginMode) {
-    setServerError('')
-    setMode(next)
-  }
 
   const {
     register,
@@ -49,13 +40,16 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
   })
 
   return (
-    <div className={cn('flex flex-col gap-6', className)} {...props}>
+    <form
+      onSubmit={onSubmit}
+      noValidate
+      className={cn('flex flex-col gap-6', className)}
+      {...props}
+    >
       <div className="flex flex-col items-center gap-2 text-center">
         <h1 className="text-2xl font-bold">Welcome back</h1>
         <p className="text-sm text-muted-foreground">
-          {mode === 'password'
-            ? 'Enter your credentials to access your account'
-            : 'We’ll email you a link to sign in without a password'}
+          Enter your credentials to access your account
         </p>
       </div>
 
@@ -68,52 +62,38 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
         </div>
       )}
 
-      {mode === 'password' ? (
-        <form onSubmit={onSubmit} noValidate className="grid gap-4">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              autoComplete="email"
-              aria-invalid={!!errors.email}
-              {...register('email')}
-            />
-            {errors.email && (
-              <p className="text-xs text-destructive">{errors.email.message}</p>
-            )}
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              aria-invalid={!!errors.password}
-              {...register('password')}
-            />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
-            )}
-          </div>
-          <Button type="submit" disabled={isPending}>
-            {isPending ? 'Signing in...' : 'Sign in'}
-          </Button>
-        </form>
-      ) : (
-        <MagicLinkForm onError={setServerError} />
-      )}
-
-      <button
-        type="button"
-        onClick={() => switchMode(mode === 'password' ? 'magic' : 'password')}
-        className="text-center text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
-      >
-        {mode === 'password'
-          ? 'Sign in with a magic link instead'
-          : 'Sign in with a password instead'}
-      </button>
+      <div className="grid gap-4">
+        <div className="grid gap-2">
+          <Label htmlFor="email">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="m@example.com"
+            autoComplete="email"
+            aria-invalid={!!errors.email}
+            {...register('email')}
+          />
+          {errors.email && (
+            <p className="text-xs text-destructive">{errors.email.message}</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            aria-invalid={!!errors.password}
+            {...register('password')}
+          />
+          {errors.password && (
+            <p className="text-xs text-destructive">{errors.password.message}</p>
+          )}
+        </div>
+        <Button type="submit" disabled={isPending}>
+          {isPending ? 'Signing in...' : 'Sign in'}
+        </Button>
+      </div>
 
       <div className="relative text-center text-sm">
         <span className="absolute inset-x-0 top-1/2 border-t border-border" />
@@ -130,6 +110,6 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
           Sign up
         </Link>
       </div>
-    </div>
+    </form>
   )
 }

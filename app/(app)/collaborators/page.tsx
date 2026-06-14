@@ -47,14 +47,21 @@ export default async function CollaboratorsPage() {
       .eq('status', 'pending'),
   ])
 
-  const members: ActiveMember[] = (memberships ?? []).map((m) => ({
-    type: 'member',
-    id: m.id,
-    user_id: m.user_id,
-    full_name: (m.users as { id: string; full_name: string; email: string }[] | null)?.[0]?.full_name ?? '',
-    email: (m.users as { id: string; full_name: string; email: string }[] | null)?.[0]?.email ?? '',
-    role: m.role as Role,
-  }))
+  const members: ActiveMember[] = (memberships ?? []).map((m) => {
+    // A membership embeds exactly one user (FK user_id → users.id), so PostgREST
+    // returns `users` as a single object. Guard against an array shape too.
+    const u = (Array.isArray(m.users) ? m.users[0] : m.users) as
+      | { id: string; full_name: string; email: string }
+      | null
+    return {
+      type: 'member' as const,
+      id: m.id,
+      user_id: m.user_id,
+      full_name: u?.full_name ?? '',
+      email: u?.email ?? '',
+      role: m.role as Role,
+    }
+  })
 
   const pending: PendingInvite[] = (invitations ?? []).map((i) => ({
     type: 'invite',

@@ -30,8 +30,6 @@ export const signInSchema = z.object({
   password: z.string().min(1, 'Enter your password.'),
 })
 
-export const magicLinkSchema = z.object({ email })
-
 export const signUpSchema = z.object({
   fullName,
   email,
@@ -43,11 +41,20 @@ export const createSchoolSchema = z.object({
   schoolName: z.string().trim().min(3, 'Enter your school name.'),
 })
 
+// Server-side schema. Password is optional here ONLY because Google OAuth
+// invitees authenticate via Google and submit no password — the action checks
+// the provider and rejects a missing password for non-Google users. When
+// present it must meet the signup policy.
 export const acceptInvitationSchema = z.object({
   fullName,
-  // Optional — hidden for Google OAuth users. Empty means "skip setting a
-  // password"; when provided it must meet the same policy as signup.
-  password: z.union([z.literal(''), password]).optional(),
+  password: password.optional(),
+})
+
+// Client schema for non-Google invitees: a password is required (it becomes
+// their only credential, since the invite link is single-use and expires).
+export const acceptInvitationWithPasswordSchema = z.object({
+  fullName,
+  password,
 })
 
 export const inviteMemberSchema = z.object({
@@ -56,7 +63,6 @@ export const inviteMemberSchema = z.object({
 })
 
 export type SignInInput            = z.infer<typeof signInSchema>
-export type MagicLinkInput         = z.infer<typeof magicLinkSchema>
 export type SignUpInput            = z.infer<typeof signUpSchema>
 export type CreateSchoolInput      = z.infer<typeof createSchoolSchema>
 export type AcceptInvitationInput  = z.infer<typeof acceptInvitationSchema>
