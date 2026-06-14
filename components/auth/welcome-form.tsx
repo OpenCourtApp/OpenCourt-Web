@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { acceptInvitation } from '@/lib/auth/actions'
 import {
   acceptInvitationSchema,
+  PASSWORD_HINT,
   type AcceptInvitationInput,
 } from '@/lib/auth/validation'
 import { Button } from '@/components/ui/button'
@@ -50,6 +51,7 @@ export function WelcomeForm({
     formState: { errors },
   } = useForm<AcceptInvitationInput>({
     resolver: zodResolver(acceptInvitationSchema),
+    mode: 'onChange',
     defaultValues: { fullName: defaultFullName, password: '' },
   })
 
@@ -122,11 +124,22 @@ export function WelcomeForm({
                 type="password"
                 autoComplete="new-password"
                 aria-invalid={!!errors.password}
+                aria-describedby="welcome-password-hint"
                 {...register('password')}
               />
-              {errors.password && (
-                <p className="text-xs text-destructive">
+              {errors.password ? (
+                <p
+                  id="welcome-password-hint"
+                  className="text-xs text-destructive"
+                >
                   {errors.password.message}
+                </p>
+              ) : (
+                <p
+                  id="welcome-password-hint"
+                  className="text-xs text-muted-foreground"
+                >
+                  {PASSWORD_HINT}
                 </p>
               )}
             </div>

@@ -49,7 +49,7 @@ export async function inviteMember(
   }
 
   const principal = await requirePrincipal()
-  if ('error' in principal) return { error: principal.error }
+  if ('error' in principal) return { error: principal.error as string }
   const { supabase } = principal
 
   if (!hasAdminKey()) return { error: MISSING_ADMIN_KEY_ERROR }
@@ -93,7 +93,7 @@ export async function revokeInvitation(
   if (!parsed.success) return { error: GENERIC_COLLABORATOR_ERROR }
 
   const principal = await requirePrincipal()
-  if ('error' in principal) return { error: principal.error }
+  if ('error' in principal) return { error: principal.error as string }
   const { supabase } = principal
 
   const { error } = await supabase.rpc('revoke_invitation', {
@@ -114,7 +114,7 @@ export async function removeMember(
   if (!parsed.success) return { error: GENERIC_COLLABORATOR_ERROR }
 
   const principal = await requirePrincipal()
-  if ('error' in principal) return { error: principal.error }
+  if ('error' in principal) return { error: principal.error as string }
   const { supabase, user: principalUser } = principal
 
   if (userId === principalUser.id) {

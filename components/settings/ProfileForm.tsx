@@ -11,14 +11,15 @@ import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Field, FieldLabel, FieldContent, FieldError } from '@/components/ui/field'
 import { createClient } from '@/lib/supabase/client'
+import { passwordSchema, PASSWORD_HINT } from '@/lib/auth/validation'
+import { friendlyAuthError } from '@/lib/auth/errors'
 
 const profileSchema = z.object({
   fullName: z.string().min(1, 'Full name is required'),
   email: z.string().email('Invalid email address'),
-  password: z.union([
-    z.literal(''),
-    z.string().min(6, 'Password must be at least 6 characters'),
-  ]),
+  // Empty = keep current password; when provided, enforce the same policy as
+  // signup (min 6 chars + one special character).
+  password: z.union([z.literal(''), passwordSchema]),
 })
 
 type ProfileFormValues = z.infer<typeof profileSchema>
@@ -35,6 +36,7 @@ export function ProfileForm() {
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
+    mode: 'onChange',
     defaultValues: { fullName: '', email: '', password: '' },
   })
 
@@ -118,7 +120,11 @@ export function ProfileForm() {
 
       if (data.password) {
         const { error } = await supabase.auth.updateUser({ password: data.password })
-        if (error) throw error
+        if (error) {
+          // Surface Supabase password-policy errors in plain language.
+          toast.error(friendlyAuthError(error))
+          return
+        }
       }
 
       initialValues.current = { ...data, password: '' }
@@ -195,11 +201,19 @@ export function ProfileForm() {
                 id="password"
                 type="password"
                 placeholder="Leave blank to keep current"
+                aria-describedby="profile-password-hint"
                 {...register('password')}
                 disabled={isSubmitting}
               />
-              {errors.password && (
+              {errors.password ? (
                 <FieldError>{errors.password.message}</FieldError>
+              ) : (
+                <p
+                  id="profile-password-hint"
+                  className="text-xs text-muted-foreground"
+                >
+                  {PASSWORD_HINT}
+                </p>
               )}
             </FieldContent>
           </Field>
