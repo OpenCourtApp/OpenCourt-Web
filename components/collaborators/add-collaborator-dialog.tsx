@@ -64,15 +64,23 @@ export function AddCollaboratorDialog({
   const onSubmit = handleSubmit((values) => {
     setServerError('')
     startTransition(async () => {
-      const result = await inviteMember(values)
-      if (result?.error) {
-        setServerError(result.error)
-      } else {
+      try {
+        const result = await inviteMember(values)
+        if (result?.error) {
+          setServerError(result.error)
+          return
+        }
         reset()
         onOpenChange(false)
         toast.success('Invitation sent', {
           description: `An invite link was sent to ${values.email}.`,
         })
+      } catch {
+        // The action threw instead of returning a result (network drop,
+        // unexpected server error). Surface it instead of failing silently.
+        const message = 'Could not send the invitation. Please try again.'
+        setServerError(message)
+        toast.error(message)
       }
     })
   })

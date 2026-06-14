@@ -89,16 +89,60 @@ The split:
 > → Authentication → URL Configuration (Site URL + redirect allow-list). Without this the
 > button errors out at Google.
 
+> **Production config — required, separate from dev (this is the #1 "works locally, fails
+> on Vercel" cause).** Supabase only honors a `redirectTo` that matches its **Redirect URLs**
+> allow-list; any other value silently falls back to the **Site URL**. If the production
+> origin isn't allow-listed, Google auth completes but Supabase bounces the user to the Site
+> URL (often still `http://localhost:3000` from dev) — the code then reaches a domain with no
+> PKCE verifier cookie, `exchangeCodeForSession` fails, and the user lands on
+> `/login?error=oauth_failed`. To fix, in Supabase → Authentication → URL Configuration:
+> - **Site URL:** set to the canonical production origin, e.g. `https://<your-app>.vercel.app`.
+> - **Redirect URLs (allow-list):** add `https://<your-app>.vercel.app/auth/callback`. To also
+>   support Vercel preview deployments, add a wildcard such as
+>   `https://<project>-*.vercel.app/auth/callback` (preview URLs vary per deployment).
+> - Keep `http://localhost:3000/auth/callback` in the allow-list so local dev keeps working.
+>
+> The Google Cloud *Authorized redirect URI* (`https://<project>.supabase.co/auth/v1/callback`)
+> is the same for dev and prod, so it needs no production-specific change. The app reads no
+> `NEXT_PUBLIC_SITE_URL` for this flow — the redirect origin is taken from
+> `window.location.origin` in the browser — so no Vercel env var is required for OAuth.
+
 ### The invitation email *is* the magic link
 There is **no** passwordless login on `/login`. The only magic link in the app
 is the one the principal triggers in Collaborators: `inviteMember` →
 `admin.auth.admin.inviteUserByEmail(email, { redirectTo: origin +
-'/auth/callback?next=/welcome' })`. The invitee clicks it, the callback exchanges
-the PKCE code for a session (`provider === 'email'`), and `proxy.ts` routes them
-to `/welcome` to accept (`accept_invitation`). Invite-only and inviter-set roles
-(business rules #1 & #3) hold because the invite row + RPC are the join path —
-the email link is just authentication. On `/welcome` non-Google invitees **must**
-set a password (it's their only credential); Google invitees set none.
+'/auth/callback?next=/welcome' })`. The invitee clicks it, the callback
+authenticates them, and `proxy.ts` routes them to `/welcome` to accept
+(`accept_invitation`). Invite-only and inviter-set roles (business rules #1 & #3)
+hold because the invite row + RPC are the join path — the email link is just
+authentication. On `/welcome` non-Google invitees **must** set a password (it's
+their only credential, applied via `updateUser` in `acceptInvitation`); Google
+invitees set none. Afterwards they sign in normally at `/login` with email +
+that password.
+
+> **Token flow — why the callback uses `verifyOtp`, not `exchangeCodeForSession`,
+> for email links.** An invite email is **admin-generated**: the recipient opens
+> it in a browser that never started a PKCE flow, so there is **no code-verifier
+> cookie** and the `?code=` / `exchangeCodeForSession` path (used by Google OAuth)
+> cannot complete — it fails and dumps the user on `/login?error=oauth_failed`.
+> `app/auth/callback/route.ts` therefore also handles `?token_hash=&type=` via
+> `supabase.auth.verifyOtp({ type, token_hash })`, which authenticates straight
+> from the emailed token (no verifier needed, works cross-device).
+>
+> **Dashboard requirement (manual, can't be done from code):** the default
+> Supabase **Invite user** email template uses `{{ .ConfirmationURL }}`, which
+> routes through `/auth/v1/verify` and produces the broken PKCE/hash redirect.
+> Change it (Authentication → Emails → *Invite user*) so the link points straight
+> at our callback with the token hash:
+> ```html
+> <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=invite">Accept the invitation</a>
+> ```
+> `{{ .RedirectTo }}` is the `redirectTo` we pass (`<origin>/auth/callback?next=/welcome`),
+> so the link is origin-correct for dev and prod automatically — but `<origin>/auth/callback`
+> must be in the **Redirect URLs** allow-list for `.RedirectTo` to be honored. (If
+> `.RedirectTo` ever comes through empty, hardcode `{{ .SiteURL }}/auth/callback?next=/welcome&token_hash={{ .TokenHash }}&type=invite`
+> instead.) The same applies to the **Magic Link** template if magic-link login is
+> ever enabled.
 
 ### `createSchool(input)`
 Calls `create_school` RPC → `refreshSession()` → `redirect('/dashboard')`.

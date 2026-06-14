@@ -77,9 +77,18 @@ export async function inviteMember(
     }
   )
 
-  // "User already registered" means they have an account — the invite row
-  // is in the DB and they'll reach /welcome next time they sign in.
-  if (inviteError && !inviteError.message.toLowerCase().includes('already registered')) {
+  // An existing account is NOT a failure: invite_member already wrote the
+  // invitations row, so the user reaches /welcome on their next sign-in.
+  // GoTrue signals this with the `email_exists` / `user_already_exists` code;
+  // the human message varies ("User already registered" vs. "...has already
+  // been registered"), so match the code first and fall back to either wording.
+  const alreadyRegistered =
+    inviteError != null &&
+    (inviteError.code === 'email_exists' ||
+      inviteError.code === 'user_already_exists' ||
+      /already (?:been )?registered/i.test(inviteError.message))
+
+  if (inviteError && !alreadyRegistered) {
     return { error: GENERIC_COLLABORATOR_ERROR }
   }
 
