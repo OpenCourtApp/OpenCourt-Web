@@ -147,7 +147,9 @@ export function CollaboratorsTable({
               <TableCell className="text-right">
                 {isPrincipal && (
                   <div className="flex items-center justify-end gap-1">
-                    <ResendInvitationButton email={row.email} role={row.role} />
+                    {row.role !== 'principal' && (
+                      <ResendInvitationButton email={row.email} role={row.role} />
+                    )}
                     <RevokeInvitationButton
                       invitationId={row.id}
                       email={row.email}

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { signUp } from '@/lib/auth/actions'
-import { signUpSchema, type SignUpInput } from '@/lib/auth/validation'
+import { signUpSchema, PASSWORD_HINT, type SignUpInput } from '@/lib/auth/validation'
 import { GoogleSignInButton } from '@/components/google-sign-in-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,6 +28,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     formState: { errors },
   } = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
+    mode: 'onChange',
     defaultValues: {
       fullName: '',
       email: '',
@@ -101,10 +102,17 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
               type="password"
               autoComplete="new-password"
               aria-invalid={!!errors.password}
+              aria-describedby="password-hint"
               {...register('password')}
             />
-            {errors.password && (
-              <p className="text-xs text-destructive">{errors.password.message}</p>
+            {errors.password ? (
+              <p id="password-hint" className="text-xs text-destructive">
+                {errors.password.message}
+              </p>
+            ) : (
+              <p id="password-hint" className="text-xs text-muted-foreground">
+                {PASSWORD_HINT}
+              </p>
             )}
           </div>
 

@@ -137,7 +137,7 @@ export function ResendInvitationButton({
   role,
 }: {
   email: string
-  role: Role
+  role: Exclude<Role, 'principal'>
 }) {
   const [isPending, startTransition] = useTransition()
 

@@ -32,6 +32,28 @@ app/
 ### Login (`/login`)
 2-column layout. Left: `OpenCourtLogo` + LoginForm. Right: hero image + gradient.
 
+`LoginForm` (`components/login-form.tsx`) is no longer a `<form>` — it's a
+container with a `mode` state (`'password' | 'magic'`) so the two sign-in methods
+can be sibling forms (no nested `<form>`). Below the active form a toggle link
+swaps modes ("Sign in with a magic link instead" ↔ "…with a password instead");
+switching clears `serverError`. The Google button + "Or continue with" divider
+and the "Sign up" link stay visible in both modes.
+
+- **Password mode**: the original email + password form → `signIn()`.
+- **Magic-link mode**: `MagicLinkForm` (`components/magic-link-form.tsx`),
+  email-only (`RiMailLine` adornment) → browser
+  `supabase.auth.signInWithOtp({ email, options: { emailRedirectTo:
+  '<origin>/auth/callback?next=/dashboard', shouldCreateUser: false } })`. On
+  completion it swaps to an inline "Check your email" confirmation
+  (`RiMailCheckLine`) — no navigation (delivery is async). Only
+  `over_request_rate_limit` is surfaced as an error; every other outcome shows
+  the same confirmation so the form can't enumerate which emails have accounts.
+
+Magic link is **not** offered on `/register`: with `shouldCreateUser: false` it
+can't create an account, and self-signup exists only to create a school. It is a
+returning-user convenience and the primary path for invitees who never set a
+password.
+
 ### Register (`/register`)
 Single column. `OpenCourtLogo` + SignupForm (Card, max-w-sm).
 

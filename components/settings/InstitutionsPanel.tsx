@@ -53,7 +53,7 @@ export function InstitutionsPanel() {
 
       const list: UserSchool[] = (memberships ?? []).map((m) => ({
         school_id:   m.school_id,
-        school_name: (m.schools as { name: string } | null)?.name ?? '',
+        school_name: (m.schools as unknown as { name: string } | null)?.name ?? '',
         role:        m.role as Role,
       }))
       setSchools(list)

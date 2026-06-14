@@ -82,7 +82,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       const schools: UserSchool[] = (memberships ?? []).map((m) => ({
         school_id:   m.school_id,
-        school_name: (m.schools as { name: string } | null)?.name ?? '',
+        school_name: (m.schools as unknown as { name: string } | null)?.name ?? '',
         role:        m.role as Role,
       }))
 

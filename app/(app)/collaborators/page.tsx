@@ -51,8 +51,8 @@ export default async function CollaboratorsPage() {
     type: 'member',
     id: m.id,
     user_id: m.user_id,
-    full_name: (m.users as { id: string; full_name: string; email: string } | null)?.full_name ?? '',
-    email: (m.users as { id: string; full_name: string; email: string } | null)?.email ?? '',
+    full_name: (m.users as { id: string; full_name: string; email: string }[] | null)?.[0]?.full_name ?? '',
+    email: (m.users as { id: string; full_name: string; email: string }[] | null)?.[0]?.email ?? '',
     role: m.role as Role,
   }))
 
