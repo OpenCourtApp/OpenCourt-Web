@@ -2,10 +2,8 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { addDays, addWeeks, format, isToday, startOfWeek } from 'date-fns'
-import { toast } from 'sonner'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
-import { deleteBooking } from '@/lib/bookings/actions'
 import {
   useBookings,
   type BookingRecord,
@@ -15,29 +13,9 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import {
-  ContextMenu,
-  ContextMenuContent,
-  ContextMenuItem,
-  ContextMenuLabel,
-  ContextMenuSeparator,
-  ContextMenuTrigger,
-} from '@/components/ui/context-menu'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import {
   RiArrowLeftSLine,
   RiArrowRightSLine,
-  RiDeleteBinLine,
   RiMapPinLine,
-  RiPencilLine,
 } from '@remixicon/react'
 import {
   DAY_END,
@@ -77,7 +55,6 @@ export function WeeklyCalendar() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null)
   const [isPrincipal, setIsPrincipal] = useState(false)
   const [editing, setEditing] = useState<BookingRecord | null>(null)
-  const [deleting, setDeleting] = useState<BookingRecord | null>(null)
   const [now, setNow] = useState(() => new Date())
 
   useEffect(() => {
@@ -92,7 +69,7 @@ export function WeeklyCalendar() {
     return () => clearInterval(timer)
   }, [])
 
-  const { courts, bookings: records, refresh } = useBookings()
+  const { courts, bookings: records } = useBookings()
 
   const weekStart = useMemo(
     () => startOfWeek(anchor, { weekStartsOn: 1 }),
@@ -150,18 +127,6 @@ export function WeeklyCalendar() {
 
   const canManage = (b: BookingRecord) =>
     isPrincipal || (currentUserId !== null && b.booked_by === currentUserId)
-
-  async function confirmDelete() {
-    if (!deleting) return
-    const result = await deleteBooking(deleting.id)
-    if (result?.error) {
-      toast.error(result.error)
-    } else {
-      await refresh()
-      toast.success('Booking deleted')
-    }
-    setDeleting(null)
-  }
 
   return (
     <Card className="flex flex-1 flex-col overflow-hidden [--card-spacing:0px]">
@@ -242,8 +207,8 @@ export function WeeklyCalendar() {
         })}
       </div>
 
-      {/* Scrollable time grid — capped to the viewport so all hours are reachable */}
-      <div className="max-h-[calc(100svh-13rem)] flex-1 overflow-y-auto">
+      {/* Scrollable time grid — fixed height vs. the viewport so every hour is reachable */}
+      <div className="h-[calc(100svh-13rem)] overflow-y-auto">
         <div className="grid grid-cols-[3.5rem_repeat(7,minmax(0,1fr))]">
           {/* Time gutter */}
           <div className="border-r">
@@ -253,7 +218,8 @@ export function WeeklyCalendar() {
                 className="relative border-b"
                 style={{ height: HOUR_HEIGHT }}
               >
-                <span className="absolute -top-2 right-2 text-[0.7rem] tabular-nums text-muted-foreground">
+                {/* sits below the hour line so the gridline never crosses the text */}
+                <span className="absolute right-2 top-1 text-[0.7rem] tabular-nums text-muted-foreground">
                   {decimalToTime(h)}
                 </span>
               </div>
@@ -288,7 +254,6 @@ export function WeeklyCalendar() {
                 {dayBookings.map((b) => {
                   const top = (b.start - DAY_START) * HOUR_HEIGHT
                   const height = (b.end - b.start) * HOUR_HEIGHT
-                  const manage = canManage(b.record)
                   const mine =
                     currentUserId !== null && b.record.booked_by === currentUserId
                   const metaClass = cn(
@@ -296,77 +261,49 @@ export function WeeklyCalendar() {
                     mine ? 'text-primary-foreground/75' : 'text-muted-foreground'
                   )
                   return (
-                    <ContextMenu key={b.record.id}>
-                      <ContextMenuTrigger asChild>
-                        <button
-                          type="button"
-                          title={`${b.title} · ${decimalToTime(b.start)}–${decimalToTime(b.end)} · ${b.court}${b.professor ? ` · ${b.professor}` : ''}`}
-                          onClick={() => manage && setEditing(b.record)}
-                          className={cn(
-                            'group absolute inset-x-1 flex flex-col overflow-hidden rounded-md border py-1 pl-2.5 pr-1.5 text-left shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                            mine
-                              ? 'border-primary/60 bg-primary text-primary-foreground'
-                              : 'border-border bg-secondary text-secondary-foreground'
-                          )}
-                          style={{ top: top + 2, height: height - 4 }}
-                        >
-                          <span
-                            aria-hidden
-                            className={cn(
-                              'absolute inset-y-0 left-0 w-1',
-                              barClasses[b.color]
-                            )}
-                          />
-                          <span className="truncate text-xs font-medium leading-tight">
-                            {b.title}
-                          </span>
-                          {height >= 38 && (
-                            <span className={metaClass}>
-                              {decimalToTime(b.start)}–{decimalToTime(b.end)}
-                            </span>
-                          )}
-                          {height >= 64 && (
-                            <span
-                              className={cn(
-                                'mt-auto flex items-center gap-1 truncate text-[0.7rem]',
-                                mine
-                                  ? 'text-primary-foreground/75'
-                                  : 'text-muted-foreground'
-                              )}
-                            >
-                              <RiMapPinLine className="size-3 shrink-0" />
-                              {b.court}
-                              {b.professor ? ` · ${b.professor}` : ''}
-                            </span>
-                          )}
-                        </button>
-                      </ContextMenuTrigger>
-                      <ContextMenuContent className="w-52">
-                        <ContextMenuLabel className="truncate">
-                          {b.title}
-                        </ContextMenuLabel>
-                        <ContextMenuSeparator />
-                        {manage ? (
-                          <>
-                            <ContextMenuItem onSelect={() => setEditing(b.record)}>
-                              <RiPencilLine />
-                              Edit booking
-                            </ContextMenuItem>
-                            <ContextMenuItem
-                              className="text-destructive focus:text-destructive"
-                              onSelect={() => setDeleting(b.record)}
-                            >
-                              <RiDeleteBinLine />
-                              Delete booking
-                            </ContextMenuItem>
-                          </>
-                        ) : (
-                          <ContextMenuItem disabled>
-                            Booked by {b.professor || 'another member'}
-                          </ContextMenuItem>
+                    <button
+                      key={b.record.id}
+                      type="button"
+                      title={`${b.title} · ${decimalToTime(b.start)}–${decimalToTime(b.end)} · ${b.court}${b.professor ? ` · ${b.professor}` : ''}`}
+                      onClick={() => setEditing(b.record)}
+                      className={cn(
+                        'group absolute inset-x-1 flex flex-col overflow-hidden rounded-md border py-1 pl-2.5 pr-1.5 text-left shadow-sm transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                        mine
+                          ? 'border-primary/60 bg-primary text-primary-foreground'
+                          : 'border-border bg-secondary text-secondary-foreground'
+                      )}
+                      style={{ top: top + 2, height: height - 4 }}
+                    >
+                      <span
+                        aria-hidden
+                        className={cn(
+                          'absolute inset-y-0 left-0 w-1',
+                          barClasses[b.color]
                         )}
-                      </ContextMenuContent>
-                    </ContextMenu>
+                      />
+                      <span className="truncate text-xs font-medium leading-tight">
+                        {b.title}
+                      </span>
+                      {height >= 38 && (
+                        <span className={metaClass}>
+                          {decimalToTime(b.start)}–{decimalToTime(b.end)}
+                        </span>
+                      )}
+                      {height >= 64 && (
+                        <span
+                          className={cn(
+                            'mt-auto flex items-center gap-1 truncate text-[0.7rem]',
+                            mine
+                              ? 'text-primary-foreground/75'
+                              : 'text-muted-foreground'
+                          )}
+                        >
+                          <RiMapPinLine className="size-3 shrink-0" />
+                          {b.court}
+                          {b.professor ? ` · ${b.professor}` : ''}
+                        </span>
+                      )}
+                    </button>
                   )
                 })}
               </div>
@@ -377,34 +314,11 @@ export function WeeklyCalendar() {
 
       <EditBookingDialog
         booking={editing}
+        canManage={editing ? canManage(editing) : false}
         onOpenChange={(open) => {
           if (!open) setEditing(null)
         }}
       />
-
-      <AlertDialog
-        open={deleting !== null}
-        onOpenChange={(open) => {
-          if (!open) setDeleting(null)
-        }}
-      >
-        <AlertDialogContent size="sm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete booking?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleting
-                ? `“${deleting.title}” will be removed from the calendar. This cannot be undone.`
-                : ''}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={confirmDelete}>
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Card>
   )
 }

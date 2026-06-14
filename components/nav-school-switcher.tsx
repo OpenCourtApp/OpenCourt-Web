@@ -79,7 +79,7 @@ export function NavSchoolSwitcher({
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56"
             align="start"
-            side="top"
+            side="bottom"
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">

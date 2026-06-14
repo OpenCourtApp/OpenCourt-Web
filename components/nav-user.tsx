@@ -55,14 +55,14 @@ export function NavUser({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <Avatar className="h-8 w-8 rounded-lg">
+              <Avatar className="size-8 shrink-0 rounded-lg">
                 <AvatarFallback className="rounded-lg">{initials}</AvatarFallback>
               </Avatar>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-medium">{user.name}</span>
                 <span className="truncate text-xs capitalize">{user.role.replace('_', ' ')}</span>
               </div>
-              <RiArrowUpDownLine className="ml-auto size-4" />
+              <RiArrowUpDownLine className="ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent

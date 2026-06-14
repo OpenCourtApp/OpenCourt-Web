@@ -18,6 +18,20 @@ export default async function OnboardingPage() {
     redirect('/dashboard')
   }
 
+  // If this account has a pending invitation (e.g. an invited user who signed in
+  // via the generic Google button instead of the invite email link), send them to
+  // accept it rather than create a new school. RLS scopes this to their email.
+  const { data: invitation } = await supabase
+    .from('invitations')
+    .select('id')
+    .eq('status', 'pending')
+    .gte('expires_at', new Date().toISOString())
+    .maybeSingle()
+
+  if (invitation) {
+    redirect('/welcome')
+  }
+
   const defaultFullName =
     (user.user_metadata?.full_name as string | undefined) ??
     (user.user_metadata?.name as string | undefined) ??

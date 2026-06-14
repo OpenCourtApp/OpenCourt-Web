@@ -12,11 +12,12 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 ## Theme
 
 - **Mode:** light / dark / system. An inline script in `app/layout.tsx` applies the stored theme class before first paint (no flash); `components/shared/theme-provider.tsx` manages it afterwards and follows OS changes live when "system" is selected. Selector UI lives in Settings → Appearance.
-- **Accent:** petrol teal, derived from the court surface in `public/login-hero.png`. `--primary: oklch(0.51 0.09 201)` (light) / `oklch(0.55 0.095 201)` (dark) — both hold WCAG AA with the near-white `--primary-foreground`.
-- **Neutral scale:** cool Zinc. Light: `--background oklch(0.99 0 0)`, pure-white cards, `--sidebar oklch(0.975 0.002 286)` (one quiet step below background). Dark: `--background oklch(0.141…)`, cards `0.21`, sidebar `0.175`, hairline borders at `oklch(1 0 0 / 8%)`.
-- **Status tokens:** `--success`, `--warning`, `--destructive` — desaturated, light + dark variants. Usage pattern: `bg-success/10 text-success`. Never hardcode palette colors (`emerald-*`, `red-*`, etc.).
-- **Charts:** `--chart-1..5` is a monochromatic petrol ramp (L 0.78→0.42, hue 195→215), same in both modes.
-- **Focus ring:** `--ring` is an accent tint (teal at 50–60% alpha).
+- **Accent + neutrals share one hue (blue-gray slate, hue 240).** This is a strict monochrome: `--primary` and the whole neutral scale derive from the same hue at low chroma, so the UI reads as one engineered material rather than "neutral + brand accent". `--primary` is effectively a dark UI element, not a brand color. Seeded from the app icon (charcoal court lines on a light blue-gray field).
+  - `--primary`: `oklch(0.40 0.04 240)` (light) / `oklch(0.72 0.03 240)` (dark). **Contrast note:** light mode = dark primary + near-white `--primary-foreground`; dark mode = light primary + **dark** `--primary-foreground` (`oklch(0.20 0.02 240)`) — white-on-0.72 fails WCAG AA, so the foreground flips. Both pairings clear AA (~6:1).
+- **Neutral scale:** blue-gray (hue 240, was cool Zinc hue ~286 — neutrals and accent now share the hue). Light: `--background oklch(0.99 0.002 240)`, near-white cards `oklch(0.995 0.001 240)`, `--sidebar oklch(0.97 0.004 240)`, `--border oklch(0.91 0.006 240)`. Dark: `--background oklch(0.16 0.006 240)`, cards `0.21`, sidebar `0.185`, hairline borders `oklch(1 0 0 / 8%)` (neutral, unchanged). Chroma stays `> 0` everywhere (never pure gray).
+- **Status tokens:** `--success`, `--warning`, `--destructive` — desaturated semantic hues, **kept separate from the monochrome** (folding them in would kill error/warning/success signaling). Light + dark variants. Usage: `bg-success/10 text-success`. Never hardcode palette colors (`emerald-*`, `red-*`, etc.).
+- **Charts:** `--chart-1..5` is a monochromatic blue-gray ramp (L 0.80→0.40, hue 240), same in both modes (was petrol hue 195→215).
+- **Focus ring:** `--ring` is a blue-gray tint (hue 240 at 50–60% alpha).
 - **CSS:** Tailwind v4 via `@import "tailwindcss"` in `app/globals.css`; imports `tw-animate-css` + `shadcn/tailwind.css`.
 - **Radius:** `0.5rem` base. Buttons and inputs `rounded-lg`, cards `rounded-xl`, badges `rounded-md` — no pill shapes.
 - **Surfaces:** cards are `border border-border bg-card`, shadow-free. The app content area sits on `bg-sidebar` so white cards read as quiet panels.
@@ -31,6 +32,16 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 
 ---
 
+## App icon
+
+- Browser tab / PWA icon: `app/icon.png` (512×512) + `app/apple-icon.png` (180×180),
+  auto-detected by the Next.js App Router (no manual `<link>` / metadata needed). The
+  stock `app/favicon.ico` was removed. Source art: a monochrome blue-gray basketball-court
+  mark — also the seed for the slate `--primary`.
+- **Scope:** this is the favicon/app icon only. The in-app SVG logo components
+  (`components/shared/oc-logo.tsx` — `OpenCourtLogo` / `OpenCourtMark`) are **unchanged**;
+  they remain the source of truth for the sidebar/auth-page wordmark and stay crisp/themeable.
+
 ## Icons
 
 - **Primary:** Remixicon (`@remixicon/react`) — `Ri*` components
@@ -43,12 +54,19 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
 ## Sidebar (`components/app-sidebar.tsx`)
 
 - `collapsible="icon"` — collapses to icon-only mode
-- **Header:** OpenCourt SVG logo via `OpenCourtLogo` / `OpenCourtMark` from `components/shared/oc-logo.tsx`
-  - Expanded: full horizontal logo (`h-5 w-auto`)
-  - Collapsed: compact "O" mark (`size-7`)
-  - Transition: sequential fade (expanding: icon fades out → full logo fades in; collapsing: full logo disappears instantly → icon fades in after 200ms)
-- **Nav:** `NavMain` with 3 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Collaborators (`RiTeamLine`)
-- **Footer:** `NavUser` — avatar with initials, name, role; dropdown with Settings link + Log out. Shows a `Skeleton` placeholder while the profile loads.
+- **Placement convention:** workspace context at the top, personal account at the
+  bottom — the Notion/Linear/Slack/Vercel pattern. For a multi-school product the
+  active-school context is the primary orientation, so the school switcher leads and
+  doubles as branding (no standalone product logo in the sidebar). The account lives
+  only here — there is no user menu in the top header bar (it carries title/CTA only).
+- **Header:** `NavSchoolSwitcher` — `OpenCourtMark` in a rounded square + active
+  school name + role + `RiExpandUpDownLine`; collapses to the mark only in icon mode.
+  Dropdown opens **downward** (`side="bottom"`): Schools list (`RiCheckLine` on active)
+  + "Create organization". `NavRowSkeleton` placeholder while data loads.
+- **Nav:** `NavMain` with 4 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Courts (`RiBasketballLine`), Collaborators (`RiTeamLine`)
+- **Footer:** `NavUser` — avatar (initials) + name + role; collapses to avatar-only in
+  icon mode; dropdown opens to the side (`side="right"`) with Settings + Log out.
+  `NavRowSkeleton` placeholder while the profile loads.
 - `SidebarRail` for manual resize handle
 
 ## `components/nav-main.tsx`

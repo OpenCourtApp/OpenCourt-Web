@@ -1,6 +1,5 @@
 'use server'
 
-import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
@@ -24,11 +23,6 @@ export type AuthActionResult = { error: string } | undefined
 
 const INVALID_INPUT: AuthActionResult = {
   error: 'Check the form fields and try again.',
-}
-
-async function resolveOrigin(): Promise<string> {
-  const origin = (await headers()).get('origin')
-  return origin ?? process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
 }
 
 export async function signIn(input: SignInInput): Promise<AuthActionResult> {
@@ -67,23 +61,9 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
   redirect(data.session ? '/onboarding' : '/login')
 }
 
-export async function signInWithGoogle(): Promise<AuthActionResult> {
-  const supabase = await createClient()
-  const origin = await resolveOrigin()
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: {
-      redirectTo: `${origin}/auth/callback`,
-    },
-  })
-
-  if (error) {
-    return { error: friendlyAuthError(error) }
-  }
-
-  redirect(data.url)
-}
+// Google OAuth is initiated client-side (browser client must own the PKCE
+// verifier + cross-origin redirect) — see components/google-sign-in-button.tsx.
+// The /auth/callback route handles exchangeCodeForSession server-side.
 
 export async function createSchool(
   input: CreateSchoolInput
