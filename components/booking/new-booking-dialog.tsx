@@ -69,6 +69,13 @@ export function NewBookingDialog() {
   }
 
   const onSubmit = handleSubmit(async (values) => {
+    // Bookings can't be created in the past. The date input's `min` blocks this
+    // in the picker; this guard covers typed/forced values (local date string).
+    if (values.date < todayValue()) {
+      toast.error(t.booking.pastDate)
+      return
+    }
+
     const result = await createBooking(values)
 
     if (result?.error) {
@@ -151,6 +158,7 @@ export function NewBookingDialog() {
             <Input
               id="booking-date"
               type="date"
+              min={todayValue()}
               aria-invalid={!!errors.date}
               {...register('date')}
             />

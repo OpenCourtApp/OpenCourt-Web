@@ -352,6 +352,7 @@ export const t = {
     notesPlaceholder: 'Algo que a equipe deva saber…',
     cancel:        'Cancelar',
     create:        'Criar reserva',
+    pastDate:      'Não é possível criar reservas em datas passadas.',
     createdTitle:  'Reserva criada',
     editTitle:     'Editar reserva',
     detailsTitle:  'Detalhes da reserva',
