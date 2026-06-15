@@ -214,7 +214,9 @@ button.rbc-input::-moz-focus-inner {
   display: none;
 }
 .rbc-event-overlaps {
-  box-shadow: -1px 1px 5px 0px var(--primary-foreground);
+  /* Separation for overlapping events is handled by the ring + drop shadow on
+     `.rbc-day-slot .rbc-event`; the old light glow here only muddied the stack. */
+  box-shadow: none;
 }
 .rbc-event-continues-prior {
   border-top-left-radius: 0;
@@ -508,6 +510,18 @@ button.rbc-input::-moz-focus-inner {
   align-items: flex-start;
   overflow: hidden;
   position: absolute;
+  /* Separate overlapping events: a ring in the grid background colour cuts a
+     crisp gap wherever two blocks touch/overlap (invisible against the empty
+     grid, visible against another event behind), and the soft drop shadow lifts
+     each block so the stack reads as distinct cards instead of one grey mass. */
+  box-shadow:
+    0 0 0 1.5px var(--background),
+    0 2px 6px -2px color-mix(in oklab, black 38%, transparent);
+}
+.rbc-day-slot .rbc-event:hover {
+  box-shadow:
+    0 0 0 1.5px var(--background),
+    0 5px 12px -3px color-mix(in oklab, black 50%, transparent);
 }
 .rbc-day-slot .rbc-event-label {
   -webkit-flex: none;
@@ -802,7 +816,7 @@ button.rbc-input::-moz-focus-inner {
 .rbc-event.event-variant-secondary {
   --event-bg: var(--secondary);
   --event-color: var(--secondary-foreground);
-  --event-border: var(--border);
+  --event-border: color-mix(in oklab, var(--secondary-foreground) 22%, transparent);
 }
 .rbc-event.event-variant-secondary:hover {
   --event-bg: color-mix(in oklab, var(--secondary) 80%, transparent);
