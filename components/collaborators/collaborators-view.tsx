@@ -34,7 +34,10 @@ export function CollaboratorsView({
       title: t.header.collaborators.title,
       description: t.header.collaborators.description,
       cta: isPrincipal ? (
-        <Button onClick={() => setAddOpen(true)}>
+        <Button
+          onClick={() => setAddOpen(true)}
+          className="bg-foreground text-background hover:bg-foreground/90 hover:shadow-none"
+        >
           <RiUserAddLine className="size-4" />
           {t.collaborators.invite}
         </Button>
@@ -74,7 +77,10 @@ export function CollaboratorsView({
             description={t.collaborators.emptyDesc}
             action={
               isPrincipal ? (
-                <Button onClick={() => setAddOpen(true)}>
+                <Button
+                  onClick={() => setAddOpen(true)}
+                  className="bg-foreground text-background hover:bg-foreground/90 hover:shadow-none"
+                >
                   <RiUserAddLine className="size-4" />
                   {t.collaborators.invite}
                 </Button>
