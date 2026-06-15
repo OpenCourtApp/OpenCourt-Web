@@ -17,19 +17,14 @@ import {
   RevokeInvitationButton,
   ResendInvitationButton,
 } from '@/components/collaborators/collaborator-actions'
-
-const ROLE_LABELS: Record<Role, string> = {
-  principal:   'Principal',
-  teacher:     'Teacher',
-  student_rep: 'Student Rep',
-}
+import { ROLE_LABELS, t } from '@/lib/strings'
 
 function RoleBadge({ role }: { role: Role }) {
   if (role === 'principal') {
-    return <Badge className="bg-success/10 text-success">Principal</Badge>
+    return <Badge className="bg-success/10 text-success">{ROLE_LABELS.principal}</Badge>
   }
   if (role === 'teacher') {
-    return <Badge className="bg-muted text-muted-foreground">Teacher</Badge>
+    return <Badge className="bg-muted text-muted-foreground">{ROLE_LABELS.teacher}</Badge>
   }
   return (
     <Badge
@@ -43,9 +38,9 @@ function RoleBadge({ role }: { role: Role }) {
 
 function StatusBadge({ active }: { active: boolean }) {
   if (active) {
-    return <Badge className="bg-muted text-muted-foreground">Active</Badge>
+    return <Badge className="bg-muted text-muted-foreground">{t.common.active}</Badge>
   }
-  return <Badge className="bg-warning/10 text-warning">Pending</Badge>
+  return <Badge className="bg-warning/10 text-warning">{t.common.pending}</Badge>
 }
 
 function initials(fullName: string, email: string) {
@@ -72,12 +67,12 @@ export function CollaboratorsTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>Email</TableHead>
-          <TableHead>Role</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>{t.collaborators.table.name}</TableHead>
+          <TableHead>{t.collaborators.table.email}</TableHead>
+          <TableHead>{t.collaborators.table.role}</TableHead>
+          <TableHead>{t.collaborators.table.status}</TableHead>
           <TableHead className="w-0">
-            <span className="sr-only">Actions</span>
+            <span className="sr-only">{t.collaborators.table.actions}</span>
           </TableHead>
         </TableRow>
       </TableHeader>

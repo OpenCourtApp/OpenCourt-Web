@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
+import { t } from '@/lib/strings'
 
 type LoginFormProps = React.ComponentProps<'form'> & {
   initialError?: string
@@ -47,9 +48,9 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Welcome back</h1>
+        <h1 className="text-2xl font-bold">{t.auth.login.title}</h1>
         <p className="text-sm text-muted-foreground">
-          Enter your credentials to access your account
+          {t.auth.login.subtitle}
         </p>
       </div>
 
@@ -64,11 +65,11 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
 
       <div className="grid gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t.common.email}</Label>
           <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder={t.common.emailPlaceholder}
             autoComplete="email"
             aria-invalid={!!errors.email}
             {...register('email')}
@@ -78,7 +79,7 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">Password</Label>
+          <Label htmlFor="password">{t.common.password}</Label>
           <Input
             id="password"
             type="password"
@@ -91,23 +92,23 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
           )}
         </div>
         <Button type="submit" disabled={isPending}>
-          {isPending ? 'Signing in...' : 'Sign in'}
+          {isPending ? t.auth.login.signingIn : t.auth.login.signIn}
         </Button>
       </div>
 
       <div className="relative text-center text-sm">
         <span className="absolute inset-x-0 top-1/2 border-t border-border" />
         <span className="relative bg-background px-2 text-muted-foreground">
-          Or continue with
+          {t.auth.login.orContinue}
         </span>
       </div>
 
       <GoogleSignInButton onError={setServerError} />
 
       <div className="text-center text-sm">
-        Don&apos;t have an account?{' '}
+        {t.auth.login.noAccount}{' '}
         <Link href="/register" className="underline underline-offset-4">
-          Sign up
+          {t.auth.login.signUp}
         </Link>
       </div>
     </form>

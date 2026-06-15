@@ -7,7 +7,16 @@ generous whitespace, 1px borders instead of floating shadows, clear type
 hierarchy, comfortable information density. **Accent color is used sparingly**
 — only for primary actions, focus rings, live/state indicators, links, and
 charts. Navigation active states, avatars, and decorative elements stay
-neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
+neutral. **Gradients are allowed, but sparingly and tastefully** — only when they
+are subtle, derived from the theme tokens (not arbitrary hues), and genuinely
+additive on a deliberate accent surface. Sanctioned uses today: the login hero
+panel (`from-chart-3 via-primary to-chart-5` + a `black/60` legibility scrim), the
+"Nova reserva" button sheen (a one-pass `white/25` shimmer on hover), and the
+weekly-chart dot-matrix backdrop (`radial-gradient` of `--muted-foreground` at low
+opacity). The bar to add a new one: it must read as part of the same engineered,
+minimalist material — no loud multi-hue ramps, no gradients on content/data
+surfaces (cards, tables, list rows), and never as a substitute for a solid token.
+Still banned outright: glassmorphism, glow, and emojis.
 
 ## Theme
 
@@ -64,7 +73,7 @@ neutral. No gradients on UI surfaces, no glassmorphism, no glow, no emojis.
   school name + role + `RiExpandUpDownLine`; collapses to the mark only in icon mode.
   Dropdown opens **downward** (`side="bottom"`): Schools list (`RiCheckLine` on active)
   + "Create organization". `NavRowSkeleton` placeholder while data loads.
-- **Nav:** `NavMain` with 4 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Courts (`RiBasketballLine`), Collaborators (`RiTeamLine`)
+- **Nav:** `NavMain` with 3 items — Dashboard (`RiDashboardLine`), Calendar (`RiCalendarCheckLine`), Collaborators (`RiTeamLine`). Court management is **not** a nav item — it lives in Settings → Courts (principal-only section).
 - **Footer:** `NavUser` — avatar (initials) + name + role; collapses to avatar-only in
   icon mode; dropdown opens to the side (`side="right"`) with Settings + Log out.
   `NavRowSkeleton` placeholder while the profile loads.

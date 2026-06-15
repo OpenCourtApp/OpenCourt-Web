@@ -9,19 +9,14 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-
-const ROLE_LABELS: Record<Role, string> = {
-  principal:   'Principal',
-  teacher:     'Teacher',
-  student_rep: 'Student Rep',
-}
+import { ROLE_LABELS, t } from '@/lib/strings'
 
 function RoleBadge({ role }: { role: Role }) {
   if (role === 'principal') {
-    return <Badge className="bg-success/10 text-success">Principal</Badge>
+    return <Badge className="bg-success/10 text-success">{ROLE_LABELS.principal}</Badge>
   }
   if (role === 'teacher') {
-    return <Badge className="bg-muted text-muted-foreground">Teacher</Badge>
+    return <Badge className="bg-muted text-muted-foreground">{ROLE_LABELS.teacher}</Badge>
   }
   return (
     <Badge variant="outline" className="border-primary/40 bg-transparent text-primary">
@@ -75,9 +70,9 @@ export function InstitutionsPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Institutions</CardTitle>
+        <CardTitle>{t.settings.institutions.title}</CardTitle>
         <CardDescription>
-          Schools you belong to. Click a school to make it active.
+          {t.settings.institutions.description}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -88,7 +83,7 @@ export function InstitutionsPanel() {
           </div>
         ) : schools.length === 0 ? (
           <p className="text-sm text-muted-foreground">
-            You are not a member of any school yet.
+            {t.settings.institutions.none}
           </p>
         ) : (
           <ul className="divide-y">
@@ -114,11 +109,11 @@ export function InstitutionsPanel() {
                       disabled={isPending}
                       onClick={() => handleSwitch(school.school_id)}
                     >
-                      Switch
+                      {t.settings.institutions.switch}
                     </Button>
                   )}
                   {isActive && (
-                    <span className="text-xs text-muted-foreground">Active</span>
+                    <span className="text-xs text-muted-foreground">{t.settings.institutions.active}</span>
                   )}
                 </li>
               )

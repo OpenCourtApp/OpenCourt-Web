@@ -15,12 +15,13 @@ import { RiUploadLine } from '@remixicon/react'
 import { createClient } from '@/lib/supabase/client'
 import { passwordSchema, PASSWORD_HINT } from '@/lib/auth/validation'
 import { friendlyAuthError } from '@/lib/auth/errors'
+import { t } from '@/lib/strings'
 
 const MAX_AVATAR_BYTES = 2 * 1024 * 1024 // 2 MB
 
 const profileSchema = z.object({
-  fullName: z.string().min(1, 'Full name is required'),
-  email: z.string().email('Invalid email address'),
+  fullName: z.string().min(1, t.settings.profile.fullNameRequired),
+  email: z.string().email(t.settings.profile.emailInvalid),
   // Empty = keep current password; when provided, enforce the same policy as
   // signup (min 6 chars + one special character).
   password: z.union([z.literal(''), passwordSchema]),
@@ -100,11 +101,11 @@ export function ProfileForm() {
     if (!file || !userId) return
 
     if (!file.type.startsWith('image/')) {
-      toast.error('Choose an image file.')
+      toast.error(t.settings.profile.chooseImage)
       return
     }
     if (file.size > MAX_AVATAR_BYTES) {
-      toast.error('Image must be under 2 MB.')
+      toast.error(t.settings.profile.imageTooLarge)
       return
     }
 
@@ -128,12 +129,12 @@ export function ProfileForm() {
       if (metaError) throw metaError
 
       setAvatarUrl(publicUrl)
-      toast.success('Profile photo updated!')
+      toast.success(t.settings.profile.photoUpdated)
     } catch (err) {
       console.error('Avatar upload failed:', err)
-      toast.error('Could not upload photo', {
+      toast.error(t.settings.profile.photoUploadError, {
         description:
-          err instanceof Error ? err.message : 'An unexpected error occurred.',
+          err instanceof Error ? err.message : t.settings.profile.unexpectedError,
       })
     } finally {
       setUploadingAvatar(false)
@@ -152,10 +153,10 @@ export function ProfileForm() {
       if (error) throw error
 
       setAvatarUrl(null)
-      toast.success('Profile photo removed.')
+      toast.success(t.settings.profile.photoRemoved)
     } catch (err) {
       console.error('Avatar remove failed:', err)
-      toast.error('Could not remove photo')
+      toast.error(t.settings.profile.photoRemoveError)
     } finally {
       setUploadingAvatar(false)
     }
@@ -167,7 +168,7 @@ export function ProfileForm() {
 
     const userId = (await supabase.auth.getSession()).data.session?.user?.id
     if (!userId) {
-      toast.error('No authenticated session found')
+      toast.error(t.settings.profile.noSession)
       return
     }
 
@@ -221,12 +222,12 @@ export function ProfileForm() {
       initialValues.current = { ...data, password: '' }
       reset({ ...data, password: '' })
       setDisplayName(data.fullName)
-      toast.success('Profile updated successfully!')
+      toast.success(t.settings.profile.profileUpdated)
     } catch (err) {
       console.error('Profile update failed:', err)
-      toast.error('Could not save your changes', {
+      toast.error(t.settings.profile.saveError, {
         description:
-          err instanceof Error ? err.message : 'An unexpected error occurred.',
+          err instanceof Error ? err.message : t.settings.profile.unexpectedError,
       })
     }
   }
@@ -243,8 +244,8 @@ export function ProfileForm() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Profile</CardTitle>
-          <CardDescription>Manage your personal information</CardDescription>
+          <CardTitle>{t.settings.profile.title}</CardTitle>
+          <CardDescription>{t.settings.profile.description}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -260,8 +261,8 @@ export function ProfileForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile</CardTitle>
-        <CardDescription>Manage your personal information</CardDescription>
+        <CardTitle>{t.settings.profile.title}</CardTitle>
+        <CardDescription>{t.settings.profile.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-center gap-4">
@@ -277,9 +278,9 @@ export function ProfileForm() {
           <div className="space-y-1">
             {isGoogleUser ? (
               <>
-                <p className="text-sm font-medium">Profile photo</p>
+                <p className="text-sm font-medium">{t.settings.profile.photo}</p>
                 <p className="text-xs text-muted-foreground">
-                  Managed by your Google account.
+                  {t.settings.profile.photoGoogle}
                 </p>
               </>
             ) : (
@@ -301,10 +302,10 @@ export function ProfileForm() {
                   >
                     <RiUploadLine className="size-4" />
                     {uploadingAvatar
-                      ? 'Uploading…'
+                      ? t.settings.profile.uploading
                       : avatarUrl
-                        ? 'Change photo'
-                        : 'Upload photo'}
+                        ? t.settings.profile.changePhoto
+                        : t.settings.profile.uploadPhoto}
                   </Button>
                   {avatarUrl && (
                     <Button
@@ -314,12 +315,12 @@ export function ProfileForm() {
                       disabled={uploadingAvatar}
                       onClick={handleAvatarRemove}
                     >
-                      Remove
+                      {t.settings.profile.removePhoto}
                     </Button>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  JPG, PNG or GIF. Max 2 MB.
+                  {t.settings.profile.photoHint}
                 </p>
               </>
             )}
@@ -328,7 +329,7 @@ export function ProfileForm() {
 
         <form onSubmit={(e) => handleSubmit(saveProfile)(e)} className="space-y-4">
           <Field>
-            <FieldLabel htmlFor="fullName">Full Name</FieldLabel>
+            <FieldLabel htmlFor="fullName">{t.settings.profile.fullName}</FieldLabel>
             <FieldContent>
               <Input
                 id="fullName"
@@ -342,7 +343,7 @@ export function ProfileForm() {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <FieldLabel htmlFor="email">{t.settings.profile.email}</FieldLabel>
             <FieldContent>
               <Input
                 id="email"
@@ -357,12 +358,12 @@ export function ProfileForm() {
           </Field>
 
           <Field>
-            <FieldLabel htmlFor="password">New Password</FieldLabel>
+            <FieldLabel htmlFor="password">{t.settings.profile.newPassword}</FieldLabel>
             <FieldContent>
               <Input
                 id="password"
                 type="password"
-                placeholder="Leave blank to keep current"
+                placeholder={t.settings.profile.passwordKeep}
                 aria-describedby="profile-password-hint"
                 {...register('password')}
                 disabled={isSubmitting}
@@ -382,7 +383,7 @@ export function ProfileForm() {
 
           <div className="flex justify-end pt-2">
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? 'Saving…' : 'Save Changes'}
+              {isSubmitting ? t.settings.profile.saving : t.settings.profile.save}
             </Button>
           </div>
         </form>

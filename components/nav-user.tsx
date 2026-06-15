@@ -25,6 +25,7 @@ import {
 } from '@/components/ui/sidebar'
 import { RiArrowUpDownLine, RiSettingsLine, RiLogoutBoxLine } from '@remixicon/react'
 import type { Role } from '@/types'
+import { ROLE_LABELS, t } from '@/lib/strings'
 
 export function NavUser({
   user,
@@ -69,7 +70,7 @@ export function NavUser({
               </Avatar>
               <div className="grid flex-1 text-left text-sm leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate font-medium">{user.name}</span>
-                <span className="truncate text-xs capitalize">{user.role.replace('_', ' ')}</span>
+                <span className="truncate text-xs capitalize">{ROLE_LABELS[user.role]}</span>
               </div>
               <RiArrowUpDownLine className="ml-auto size-4 shrink-0 group-data-[collapsible=icon]:hidden" />
             </SidebarMenuButton>
@@ -101,7 +102,7 @@ export function NavUser({
                   </span>
                 </div>
                 <Badge variant="secondary" className="shrink-0 capitalize">
-                  {user.role.replace('_', ' ')}
+                  {ROLE_LABELS[user.role]}
                 </Badge>
               </div>
             </DropdownMenuLabel>
@@ -110,7 +111,7 @@ export function NavUser({
               <DropdownMenuItem asChild className="gap-2">
                 <Link href="/settings">
                   <RiSettingsLine className="text-muted-foreground" />
-                  Settings
+                  {t.account.settings}
                 </Link>
               </DropdownMenuItem>
             </DropdownMenuGroup>
@@ -121,7 +122,7 @@ export function NavUser({
               className="gap-2"
             >
               <RiLogoutBoxLine />
-              Log out
+              {t.account.logOut}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

@@ -11,7 +11,7 @@ const dmSans = DM_Sans({
 
 export const metadata: Metadata = {
   title: 'OpenCourt',
-  description: 'Court scheduling for schools',
+  description: 'Agendamento de quadras para escolas',
 }
 
 // Applies the stored theme before first paint to avoid a light-mode flash
@@ -20,7 +20,7 @@ const themeInitScript = `try{var t=localStorage.getItem('theme');var d=t==='dark
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={dmSans.variable} suppressHydrationWarning>
+    <html lang="pt-BR" className={dmSans.variable} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>

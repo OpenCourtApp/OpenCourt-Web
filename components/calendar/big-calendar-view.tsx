@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import moment from 'moment'
+import 'moment/locale/pt-br'
 import {
   momentLocalizer,
   Views,
@@ -35,7 +36,9 @@ import {
   RiMapPinLine,
 } from '@remixicon/react'
 import { DAY_START, DAY_END } from '@/lib/bookings/constants'
+import { t } from '@/lib/strings'
 
+moment.locale('pt-br')
 const localizer = momentLocalizer(moment)
 
 type CalEvent = Event & {
@@ -98,14 +101,14 @@ function CalendarToolbar({
     <div className="flex flex-wrap items-center justify-between gap-3 border-b px-3 py-2.5">
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={() => onNavigate('TODAY')}>
-          Today
+          {t.calendar.today}
         </Button>
         <div className="flex items-center gap-0.5">
           <Button
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Previous"
+            aria-label={t.calendar.previous}
             onClick={() => onNavigate('PREV')}
           >
             <RiArrowLeftSLine className="size-4" />
@@ -114,7 +117,7 @@ function CalendarToolbar({
             variant="ghost"
             size="icon"
             className="size-8"
-            aria-label="Next"
+            aria-label={t.calendar.next}
             onClick={() => onNavigate('NEXT')}
           >
             <RiArrowRightSLine className="size-4" />
@@ -127,11 +130,11 @@ function CalendarToolbar({
         <div className="hidden items-center gap-3 text-xs text-muted-foreground sm:flex">
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[3px] bg-primary" />
-            You
+            {t.calendar.legendYou}
           </span>
           <span className="flex items-center gap-1.5">
             <span className="size-2.5 rounded-[3px] border border-border bg-secondary" />
-            Others
+            {t.calendar.legendOthers}
           </span>
         </div>
         <div className="flex items-center rounded-lg bg-muted p-0.5">
@@ -147,7 +150,7 @@ function CalendarToolbar({
                   : 'text-muted-foreground hover:text-foreground'
               )}
             >
-              {v}
+              {t.calendar.views[v as keyof typeof t.calendar.views]}
             </button>
           ))}
         </div>
@@ -194,12 +197,17 @@ export function BigCalendarView() {
 
   return (
     <Card className="flex flex-1 flex-col overflow-hidden p-0">
-      <div className="h-[calc(100svh-9.5rem)]">
+      {/* Fills the remaining Card height responsively (no magic px). RBC needs
+          an explicit height, which `style={{ height: '100%' }}` resolves from
+          this flex-1 box; `min-h-0` lets it shrink so the calendar's own
+          internal scroll (Day/Week) handles overflow — no nested scroller. */}
+      <div className="min-h-0 flex-1">
         <Calendar
           localizer={localizer}
           events={events}
           components={calendarComponents}
           formats={formats}
+          messages={t.calendar.messages}
           style={{ height: '100%' }}
           view={view}
           onView={setView}

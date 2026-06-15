@@ -2,7 +2,9 @@
 
 import { useEffect } from 'react'
 import { format } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { useHeader } from '@/components/shared/header-context'
+import { t } from '@/lib/strings'
 import { NewBookingDialog } from '@/components/booking/new-booking-dialog'
 import { StatsRow } from '@/components/dashboard/stats-row'
 import { WeeklyChart } from '@/components/dashboard/weekly-chart'
@@ -13,8 +15,8 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setContent({
-      title: 'Dashboard',
-      description: format(new Date(), 'EEEE, MMMM d, yyyy'),
+      title: t.header.dashboard.title,
+      description: format(new Date(), "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }),
       cta: <NewBookingDialog />,
     })
     return () => setContent({ title: '' })

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { t } from '@/lib/strings'
 
 export function NotificationsPanel() {
   const [emailNewBooking, setEmailNewBooking] = useState(true)
@@ -12,17 +13,17 @@ export function NotificationsPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notifications</CardTitle>
-        <CardDescription>Choose what updates you receive via email</CardDescription>
+        <CardTitle>{t.settings.notifications.title}</CardTitle>
+        <CardDescription>{t.settings.notifications.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-0.5">
             <Label htmlFor="email-new-booking" className="cursor-pointer">
-              Email on new booking
+              {t.settings.notifications.newBooking}
             </Label>
             <p className="text-xs text-muted-foreground">
-              Receive an email when a new booking is created
+              {t.settings.notifications.newBookingDesc}
             </p>
           </div>
           <Switch
@@ -34,10 +35,10 @@ export function NotificationsPanel() {
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-0.5">
             <Label htmlFor="email-booking-changes" className="cursor-pointer">
-              Email on booking changes
+              {t.settings.notifications.bookingChanges}
             </Label>
             <p className="text-xs text-muted-foreground">
-              Receive an email when a booking is updated or cancelled
+              {t.settings.notifications.bookingChangesDesc}
             </p>
           </div>
           <Switch

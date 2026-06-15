@@ -31,6 +31,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { t } from '@/lib/strings'
 
 export function EditBookingDialog({
   booking,
@@ -88,7 +89,7 @@ export function EditBookingDialog({
     }
     await refresh()
     onOpenChange(false)
-    toast.success('Booking updated')
+    toast.success(t.booking.updated)
   })
 
   async function handleDelete() {
@@ -102,7 +103,7 @@ export function EditBookingDialog({
     }
     await refresh()
     onOpenChange(false)
-    toast.success('Booking deleted')
+    toast.success(t.booking.deleted)
   }
 
   const busy = isSubmitting || deleting
@@ -111,17 +112,17 @@ export function EditBookingDialog({
     <Dialog open={booking !== null} onOpenChange={onOpenChange}>
       <DialogContent className="duration-75 data-open:slide-in-from-bottom-1 data-open:zoom-in-98">
         <DialogHeader>
-          <DialogTitle>{canManage ? 'Edit booking' : 'Booking details'}</DialogTitle>
+          <DialogTitle>{canManage ? t.booking.editTitle : t.booking.detailsTitle}</DialogTitle>
           <DialogDescription>
             {canManage
-              ? 'Update the title, court, day or time slot for this session.'
-              : `Booked by ${booking?.professor || 'another member'}. You can only change your own bookings.`}
+              ? t.booking.editDescription
+              : t.booking.detailsDescription(booking?.professor || t.booking.anotherMember)}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit} noValidate className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="edit-booking-title">Title</Label>
+            <Label htmlFor="edit-booking-title">{t.booking.titleLabel}</Label>
             <Input
               id="edit-booking-title"
               autoComplete="off"
@@ -135,7 +136,7 @@ export function EditBookingDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="edit-booking-court">Court</Label>
+            <Label htmlFor="edit-booking-court">{t.booking.courtLabel}</Label>
             <Controller
               name="courtId"
               control={control}
@@ -146,7 +147,7 @@ export function EditBookingDialog({
                   disabled={!canManage}
                 >
                   <SelectTrigger id="edit-booking-court" aria-invalid={!!errors.courtId}>
-                    <SelectValue placeholder="Select a court" />
+                    <SelectValue placeholder={t.booking.selectCourt} />
                   </SelectTrigger>
                   <SelectContent>
                     {courts.map((court) => (
@@ -164,7 +165,7 @@ export function EditBookingDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="edit-booking-date">Date</Label>
+            <Label htmlFor="edit-booking-date">{t.booking.dateLabel}</Label>
             <Input
               id="edit-booking-date"
               type="date"
@@ -179,7 +180,7 @@ export function EditBookingDialog({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="edit-booking-start">Start</Label>
+              <Label htmlFor="edit-booking-start">{t.booking.startLabel}</Label>
               <Input
                 id="edit-booking-start"
                 type="time"
@@ -194,7 +195,7 @@ export function EditBookingDialog({
               )}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="edit-booking-end">End</Label>
+              <Label htmlFor="edit-booking-end">{t.booking.endLabel}</Label>
               <Input
                 id="edit-booking-end"
                 type="time"
@@ -212,7 +213,7 @@ export function EditBookingDialog({
 
           <div className="grid gap-2">
             <Label htmlFor="edit-booking-notes">
-              Notes <span className="text-muted-foreground">(optional)</span>
+              {t.booking.notesLabel} <span className="text-muted-foreground">{t.common.optional}</span>
             </Label>
             <Textarea
               id="edit-booking-notes"
@@ -226,7 +227,7 @@ export function EditBookingDialog({
             confirmingDelete ? (
               <DialogFooter className="sm:justify-between">
                 <span className="text-sm text-muted-foreground">
-                  Delete this booking?
+                  {t.booking.deletePrompt}
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -235,7 +236,7 @@ export function EditBookingDialog({
                     disabled={busy}
                     onClick={() => setConfirmingDelete(false)}
                   >
-                    Keep
+                    {t.booking.keep}
                   </Button>
                   <Button
                     type="button"
@@ -243,7 +244,7 @@ export function EditBookingDialog({
                     disabled={busy}
                     onClick={handleDelete}
                   >
-                    Delete
+                    {t.booking.delete}
                   </Button>
                 </div>
               </DialogFooter>
@@ -257,16 +258,16 @@ export function EditBookingDialog({
                   onClick={() => setConfirmingDelete(true)}
                 >
                   <RiDeleteBinLine className="size-4" />
-                  Delete
+                  {t.booking.delete}
                 </Button>
                 <div className="flex gap-2">
                   <DialogClose asChild>
                     <Button type="button" variant="outline" disabled={busy}>
-                      Cancel
+                      {t.booking.cancel}
                     </Button>
                   </DialogClose>
                   <Button type="submit" disabled={busy}>
-                    Save changes
+                    {t.booking.save}
                   </Button>
                 </div>
               </DialogFooter>
@@ -275,7 +276,7 @@ export function EditBookingDialog({
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">
-                  Close
+                  {t.booking.close}
                 </Button>
               </DialogClose>
             </DialogFooter>

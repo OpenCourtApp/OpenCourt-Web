@@ -1,16 +1,16 @@
 import { z } from 'zod'
 
 const bookingFields = {
-  title:     z.string().trim().min(2, 'Enter a title'),
-  courtId:   z.uuid('Select a court'),
-  date:      z.string().min(1, 'Pick a date'),
-  startTime: z.string().min(1, 'Set a start time'),
-  endTime:   z.string().min(1, 'Set an end time'),
+  title:     z.string().trim().min(2, 'Insira um título'),
+  courtId:   z.uuid('Selecione uma quadra'),
+  date:      z.string().min(1, 'Escolha uma data'),
+  startTime: z.string().min(1, 'Defina o horário de início'),
+  endTime:   z.string().min(1, 'Defina o horário de término'),
   notes:     z.string().optional(),
 }
 
 const endAfterStart = {
-  message: 'End time must be after the start time',
+  message: 'O horário de término deve ser depois do início',
   path:    ['endTime'],
 }
 

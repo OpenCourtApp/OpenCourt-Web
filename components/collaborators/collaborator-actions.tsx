@@ -9,6 +9,7 @@ import {
 } from '@remixicon/react'
 import { removeMember, revokeInvitation, inviteMember } from '@/lib/collaborators/actions'
 import type { Role } from '@/types'
+import { t } from '@/lib/strings'
 import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
@@ -48,7 +49,7 @@ export function RemoveMemberButton({
         setServerError(result.error)
       } else {
         setOpen(false)
-        toast.success(`${memberName} removed`)
+        toast.success(t.collaborators.actions.removed(memberName))
       }
     })
   }
@@ -59,17 +60,16 @@ export function RemoveMemberButton({
         <Button
           variant="ghost"
           size="icon-sm"
-          aria-label={`Remove ${memberName}`}
+          aria-label={t.collaborators.actions.removeAria(memberName)}
         >
           <RiDeleteBinLine className="text-muted-foreground" />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Remove {memberName}?</AlertDialogTitle>
+          <AlertDialogTitle>{t.collaborators.actions.removeConfirmTitle(memberName)}</AlertDialogTitle>
           <AlertDialogDescription>
-            They will lose access to this school. This does not affect their
-            other school memberships.
+            {t.collaborators.actions.removeConfirmDesc}
           </AlertDialogDescription>
         </AlertDialogHeader>
         {serverError && (
@@ -81,13 +81,13 @@ export function RemoveMemberButton({
           </div>
         )}
         <AlertDialogFooter>
-          <AlertDialogCancel disabled={isPending}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel disabled={isPending}>{t.common.cancel}</AlertDialogCancel>
           <Button
             variant="destructive"
             disabled={isPending}
             onClick={handleConfirm}
           >
-            {isPending ? 'Removing...' : 'Remove'}
+            {isPending ? t.common.removing : t.common.remove}
           </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
@@ -112,7 +112,7 @@ export function RevokeInvitationButton({
       if (result?.error) {
         toast.error(result.error)
       } else {
-        toast.success('Invitation cancelled')
+        toast.success(t.collaborators.actions.revoked)
       }
     })
   }
@@ -121,7 +121,7 @@ export function RevokeInvitationButton({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label={`Cancel invitation for ${email}`}
+      aria-label={t.collaborators.actions.cancelInviteAria(email)}
       disabled={isPending}
       onClick={handleRevoke}
     >
@@ -147,8 +147,8 @@ export function ResendInvitationButton({
       if (result?.error) {
         toast.error(result.error)
       } else {
-        toast.success('Invitation resent', {
-          description: `A new invite link was sent to ${email}.`,
+        toast.success(t.collaborators.actions.resentTitle, {
+          description: t.collaborators.actions.resentDesc(email),
         })
       }
     })
@@ -158,7 +158,7 @@ export function ResendInvitationButton({
     <Button
       variant="ghost"
       size="icon-sm"
-      aria-label={`Resend invitation for ${email}`}
+      aria-label={t.collaborators.actions.resendInviteAria(email)}
       disabled={isPending}
       onClick={handleResend}
     >

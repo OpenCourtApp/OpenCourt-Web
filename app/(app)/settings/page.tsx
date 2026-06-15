@@ -7,22 +7,26 @@ import { cn } from '@/lib/utils'
 import { ProfileForm } from '@/components/settings/ProfileForm'
 import { InstitutionsPanel } from '@/components/settings/InstitutionsPanel'
 import { AuthorizationPanel } from '@/components/settings/AuthorizationPanel'
+import { CourtsPanel } from '@/components/settings/CourtsPanel'
 import { NotificationsPanel } from '@/components/settings/NotificationsPanel'
 import { AppearancePanel } from '@/components/settings/AppearancePanel'
 import {
   RiUserLine,
   RiSchoolLine,
   RiKey2Line,
+  RiBasketballLine,
   RiNotification3Line,
   RiPaletteLine,
 } from '@remixicon/react'
+import { t } from '@/lib/strings'
 
 const sections = [
-  { id: 'profile',       label: 'Profile',       icon: RiUserLine },
-  { id: 'institutions',  label: 'Institutions',  icon: RiSchoolLine },
-  { id: 'authorization', label: 'Authorization', icon: RiKey2Line },
-  { id: 'notifications', label: 'Notifications', icon: RiNotification3Line },
-  { id: 'appearance',    label: 'Appearance',    icon: RiPaletteLine },
+  { id: 'profile',       label: t.settings.sections.profile,       icon: RiUserLine },
+  { id: 'institutions',  label: t.settings.sections.institutions,  icon: RiSchoolLine },
+  { id: 'authorization', label: t.settings.sections.authorization, icon: RiKey2Line },
+  { id: 'courts',        label: t.settings.sections.courts,        icon: RiBasketballLine },
+  { id: 'notifications', label: t.settings.sections.notifications, icon: RiNotification3Line },
+  { id: 'appearance',    label: t.settings.sections.appearance,    icon: RiPaletteLine },
 ] as const
 
 type SectionId = (typeof sections)[number]['id']
@@ -33,8 +37,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     setContent({
-      title: 'Settings',
-      description: 'Manage your account preferences',
+      title: t.header.settings.title,
+      description: t.header.settings.description,
     })
     return () => setContent({ title: '' })
   }, [setContent])
@@ -120,6 +124,7 @@ export default function SettingsPage() {
         <section id="profile"       className="scroll-mt-4"><ProfileForm /></section>
         <section id="institutions"  className="scroll-mt-4"><InstitutionsPanel /></section>
         <section id="authorization" className="scroll-mt-4"><AuthorizationPanel /></section>
+        <section id="courts"        className="scroll-mt-4"><CourtsPanel /></section>
         <section id="notifications" className="scroll-mt-4"><NotificationsPanel /></section>
         <section id="appearance"    className="scroll-mt-4"><AppearancePanel /></section>
       </main>

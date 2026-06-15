@@ -1,14 +1,14 @@
 export const GENERIC_COURT_ERROR =
-  'Something went wrong. Please try again.'
+  'Algo deu errado. Tente novamente.'
 
 export const NOT_PRINCIPAL_ERROR =
-  'Only principals can manage courts.'
+  'Apenas gestores podem gerenciar quadras.'
 
 export const DUPLICATE_COURT_ERROR =
-  'A court with that name already exists.'
+  'Já existe uma quadra com esse nome.'
 
 export const COURT_HAS_BOOKINGS_ERROR =
-  'This court has bookings and cannot be deleted.'
+  'Esta quadra tem reservas e não pode ser excluída.'
 
 export const NO_ACTIVE_SCHOOL_ERROR =
-  'Select a school before managing courts.'
+  'Selecione uma escola antes de gerenciar quadras.'

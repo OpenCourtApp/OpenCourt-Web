@@ -32,6 +32,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { RiAddLine } from '@remixicon/react'
+import { t } from '@/lib/strings'
 
 function todayValue() {
   // yyyy-MM-dd for the native date input, in local time
@@ -78,7 +79,7 @@ export function NewBookingDialog() {
     await refresh()
     setOpen(false)
     reset()
-    toast.success('Booking created', {
+    toast.success(t.booking.createdTitle, {
       description: `${values.title} · ${values.startTime}–${values.endTime}`,
     })
   })
@@ -88,25 +89,25 @@ export function NewBookingDialog() {
       <DialogTrigger asChild>
         <Button className="group relative overflow-hidden transition-transform duration-200 hover:-translate-y-0.5 before:pointer-events-none before:absolute before:inset-0 before:-translate-x-[150%] before:skew-x-[-20deg] before:bg-gradient-to-r before:from-transparent before:via-white/25 before:to-transparent before:transition-transform before:duration-700 before:ease-out hover:before:translate-x-[150%]">
           <RiAddLine className="size-4 transition-transform duration-200 group-hover:rotate-90" />
-          New Booking
+          {t.booking.cta}
         </Button>
       </DialogTrigger>
       <DialogContent
         className="duration-75 data-open:slide-in-from-bottom-1 data-open:zoom-in-98"
       >
         <DialogHeader>
-          <DialogTitle>New booking</DialogTitle>
+          <DialogTitle>{t.booking.newTitle}</DialogTitle>
           <DialogDescription>
-            Reserve a court for a session. Pick the court, day and time slot.
+            {t.booking.newDescription}
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={onSubmit} noValidate className="grid gap-4">
           <div className="grid gap-2">
-            <Label htmlFor="booking-title">Title</Label>
+            <Label htmlFor="booking-title">{t.booking.titleLabel}</Label>
             <Input
               id="booking-title"
-              placeholder="Tennis Basics"
+              placeholder={t.booking.titlePlaceholder}
               autoComplete="off"
               aria-invalid={!!errors.title}
               {...register('title')}
@@ -117,7 +118,7 @@ export function NewBookingDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="booking-court">Court</Label>
+            <Label htmlFor="booking-court">{t.booking.courtLabel}</Label>
             <Controller
               name="courtId"
               control={control}
@@ -126,7 +127,7 @@ export function NewBookingDialog() {
                   <SelectTrigger id="booking-court" aria-invalid={!!errors.courtId}>
                     <SelectValue
                       placeholder={
-                        courts.length ? 'Select a court' : 'No courts available'
+                        courts.length ? t.booking.selectCourt : t.booking.noCourts
                       }
                     />
                   </SelectTrigger>
@@ -146,7 +147,7 @@ export function NewBookingDialog() {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="booking-date">Date</Label>
+            <Label htmlFor="booking-date">{t.booking.dateLabel}</Label>
             <Input
               id="booking-date"
               type="date"
@@ -160,7 +161,7 @@ export function NewBookingDialog() {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="grid gap-2">
-              <Label htmlFor="booking-start">Start</Label>
+              <Label htmlFor="booking-start">{t.booking.startLabel}</Label>
               <Input
                 id="booking-start"
                 type="time"
@@ -174,7 +175,7 @@ export function NewBookingDialog() {
               )}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="booking-end">End</Label>
+              <Label htmlFor="booking-end">{t.booking.endLabel}</Label>
               <Input
                 id="booking-end"
                 type="time"
@@ -191,11 +192,11 @@ export function NewBookingDialog() {
 
           <div className="grid gap-2">
             <Label htmlFor="booking-notes">
-              Notes <span className="text-muted-foreground">(optional)</span>
+              {t.booking.notesLabel} <span className="text-muted-foreground">{t.common.optional}</span>
             </Label>
             <Textarea
               id="booking-notes"
-              placeholder="Anything the staff should know…"
+              placeholder={t.booking.notesPlaceholder}
               rows={3}
               {...register('notes')}
             />
@@ -204,11 +205,11 @@ export function NewBookingDialog() {
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline" disabled={isSubmitting}>
-                Cancel
+                {t.booking.cancel}
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isSubmitting}>
-              Create booking
+              {t.booking.create}
             </Button>
           </DialogFooter>
         </form>

@@ -28,6 +28,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { t } from '@/lib/strings'
 
 type AddCollaboratorDialogProps = {
   open: boolean
@@ -72,13 +73,13 @@ export function AddCollaboratorDialog({
         }
         reset()
         onOpenChange(false)
-        toast.success('Invitation sent', {
-          description: `An invite link was sent to ${values.email}.`,
+        toast.success(t.collaborators.dialog.sentTitle, {
+          description: t.collaborators.dialog.sentDesc(values.email),
         })
       } catch {
         // The action threw instead of returning a result (network drop,
         // unexpected server error). Surface it instead of failing silently.
-        const message = 'Could not send the invitation. Please try again.'
+        const message = t.collaborators.dialog.sendError
         setServerError(message)
         toast.error(message)
       }
@@ -89,10 +90,9 @@ export function AddCollaboratorDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Invite collaborator</DialogTitle>
+          <DialogTitle>{t.collaborators.dialog.title}</DialogTitle>
           <DialogDescription>
-            An invite link will be sent to their email. You set their role —
-            they cannot change it.
+            {t.collaborators.dialog.description}
           </DialogDescription>
         </DialogHeader>
 
@@ -107,11 +107,11 @@ export function AddCollaboratorDialog({
           )}
 
           <div className="grid gap-2">
-            <Label htmlFor="invite-email">Email</Label>
+            <Label htmlFor="invite-email">{t.collaborators.dialog.emailLabel}</Label>
             <Input
               id="invite-email"
               type="email"
-              placeholder="teacher@school.edu"
+              placeholder={t.collaborators.dialog.emailPlaceholder}
               autoComplete="off"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -122,18 +122,18 @@ export function AddCollaboratorDialog({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="invite-role">Role</Label>
+            <Label htmlFor="invite-role">{t.collaborators.dialog.roleLabel}</Label>
             <Controller
               name="role"
               control={control}
               render={({ field }) => (
                 <Select value={field.value ?? ''} onValueChange={field.onChange}>
                   <SelectTrigger id="invite-role" aria-invalid={!!errors.role}>
-                    <SelectValue placeholder="Select a role" />
+                    <SelectValue placeholder={t.collaborators.dialog.rolePlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="teacher">Teacher</SelectItem>
-                    <SelectItem value="student_rep">Student Rep</SelectItem>
+                    <SelectItem value="teacher">{t.collaborators.dialog.roleTeacher}</SelectItem>
+                    <SelectItem value="student_rep">{t.collaborators.dialog.roleStudentRep}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
@@ -146,11 +146,11 @@ export function AddCollaboratorDialog({
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline" disabled={isPending}>
-                Cancel
+                {t.collaborators.dialog.cancel}
               </Button>
             </DialogClose>
             <Button type="submit" disabled={isPending}>
-              {isPending ? 'Sending...' : 'Send invite'}
+              {isPending ? t.collaborators.dialog.sending : t.collaborators.dialog.send}
             </Button>
           </DialogFooter>
         </form>

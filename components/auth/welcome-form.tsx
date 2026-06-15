@@ -21,12 +21,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-
-const ROLE_LABELS: Record<string, string> = {
-  teacher:     'Teacher',
-  student_rep: 'Student Rep',
-  principal:   'Principal',
-}
+import { ROLE_LABELS, t } from '@/lib/strings'
 
 type WelcomeFormProps = {
   invitation: {
@@ -71,14 +66,14 @@ export function WelcomeForm({
     })
   })
 
-  const schoolName = invitation.schools?.name ?? 'your school'
+  const schoolName = invitation.schools?.name ?? t.auth.welcome.yourSchool
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>You&apos;ve been invited</CardTitle>
+        <CardTitle>{t.auth.welcome.title}</CardTitle>
         <CardDescription>
-          Accept your invitation to join{' '}
+          {t.auth.welcome.subtitle}{' '}
           <span className="font-medium text-foreground">{schoolName}</span>.
         </CardDescription>
       </CardHeader>
@@ -94,18 +89,18 @@ export function WelcomeForm({
           )}
 
           <div className="grid gap-2">
-            <Label>Role</Label>
+            <Label>{t.common.role}</Label>
             <div>
               <Badge variant="outline">{ROLE_LABELS[invitation.role]}</Badge>
             </div>
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="welcome-name">Full name</Label>
+            <Label htmlFor="welcome-name">{t.common.fullName}</Label>
             <Input
               id="welcome-name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t.common.fullNamePlaceholder}
               autoComplete="name"
               aria-invalid={!!errors.fullName}
               {...register('fullName')}
@@ -119,7 +114,7 @@ export function WelcomeForm({
 
           {!isGoogleUser && (
             <div className="grid gap-2">
-              <Label htmlFor="welcome-password">Set a password</Label>
+              <Label htmlFor="welcome-password">{t.auth.welcome.setPassword}</Label>
               <Input
                 id="welcome-password"
                 type="password"
@@ -147,7 +142,7 @@ export function WelcomeForm({
           )}
 
           <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? 'Joining...' : `Join ${schoolName}`}
+            {isPending ? t.auth.welcome.joining : t.auth.welcome.join(schoolName)}
           </Button>
         </form>
       </CardContent>

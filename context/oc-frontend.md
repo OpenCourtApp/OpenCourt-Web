@@ -22,7 +22,8 @@ app/
     ├── dashboard/page.tsx          # Stats row, weekly chart, upcoming list
     ├── calendar/page.tsx           # BigCalendarView (react-big-calendar)
     ├── collaborators/page.tsx      # Server component → CollaboratorsView
-    └── settings/page.tsx           # Profile, Institutions, authorization, notifications, appearance
+    ├── courts/page.tsx             # Redirect → /settings (court mgmt moved into Settings)
+    └── settings/page.tsx           # Profile, Institutions, Authorization, Courts, Notifications, Appearance
 ```
 
 ---
@@ -125,7 +126,8 @@ Flat `Link` items inside `SidebarMenuButton`; active via `usePathname()`.
 | `/dashboard`    | Done        | Stats cards, Recharts bar chart, upcoming today list                             |
 | `/calendar`     | Done        | Shadcn UI Big Calendar (`components/calendar/big-calendar-view.tsx`) — react-big-calendar with a custom app-themed toolbar + event cells |
 | `/collaborators`| Done        | Combined members + pending invites table, invite dialog, role/status badges      |
-| `/settings`     | Done        | Profile, Institutions switcher, access token (principal only), notifications, appearance |
+| `/settings`     | Done        | Profile, Institutions switcher, access token (principal only), courts (principal only), notifications, appearance |
+| `/courts`       | Redirect    | Redirects to `/settings`; court management is now the Courts section in Settings |
 
 ---
 
@@ -161,7 +163,7 @@ Fields: Email + Role (Teacher / Student Rep). Submit → `inviteMember` → `toa
 
 ## Settings (`/settings`)
 
-Scrollspy sidebar nav with sections: Profile · Institutions · Authorization · Notifications · Appearance.
+Scrollspy sidebar nav with sections: Profile · Institutions · Authorization · Courts · Notifications · Appearance. (Authorization and Courts render nothing for non-principals.)
 
 ### `components/settings/ProfileForm.tsx`
 Profile section: avatar + Full Name + Email + New Password. The **avatar block**
@@ -181,6 +183,15 @@ Informational if only one school.
 ### `components/settings/AuthorizationPanel.tsx`
 Principal-only. Fetches `access_token` from `schools` table for the active school.
 Shows the token with a Copy button (`RiFileCopyLine`). Alert: "Organization identifier — reserved for future use."
+
+### `components/settings/CourtsPanel.tsx`
+Principal-only (returns null for members), alongside Authorization. Court management
+moved here from the former standalone `/courts` page (which now redirects to `/settings`).
+Tight list: add (inline form), rename (inline), delete (AlertDialog; blocked while the
+court has bookings), backed by `createCourt` / `renameCourt` / `deleteCourt` (RLS:
+principal-only INSERT/UPDATE/DELETE — unchanged). Reads courts/bookings from
+`BookingsProvider`; `EmptyState` covers the zero-courts case (the very first court is
+handled earlier by `FirstCourtGate`).
 
 ---
 
@@ -216,7 +227,9 @@ Never hardcode color names. Always use CSS variable tokens.
 ## Motion conventions
 
 Sober, Notion/Linear-inspired micro-motion — no bouncy easing, no scale-pop, no
-glow/gradient decoration. Powered by Tailwind v4 transition utilities and
+glow decoration. A subtle gradient sheen is fine when it's a single restrained pass
+(e.g. the "Nova reserva" button's `white/25` hover shimmer); avoid looping or loud
+gradient animation. Powered by Tailwind v4 transition utilities and
 `tw-animate-css` (imported in `globals.css`); **no extra animation libraries**.
 
 | Pattern | Implementation | Duration |

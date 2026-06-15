@@ -19,6 +19,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { RiSchoolLine } from '@remixicon/react'
+import { t } from '@/lib/strings'
 
 type OnboardingFormProps = React.ComponentProps<typeof Card> & {
   email: string
@@ -54,9 +55,9 @@ export function OnboardingForm({
   return (
     <Card {...props}>
       <CardHeader>
-        <CardTitle>Create your organization</CardTitle>
+        <CardTitle>{t.auth.onboarding.title}</CardTitle>
         <CardDescription>
-          You&apos;re signed in as {email}. Set up your school to get started.
+          {t.auth.onboarding.subtitle(email)}
         </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -71,11 +72,11 @@ export function OnboardingForm({
           )}
 
           <div className="grid gap-2">
-            <Label htmlFor="create-name">Full name</Label>
+            <Label htmlFor="create-name">{t.common.fullName}</Label>
             <Input
               id="create-name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t.common.fullNamePlaceholder}
               autoComplete="name"
               aria-invalid={!!errors.fullName}
               {...register('fullName')}
@@ -88,13 +89,13 @@ export function OnboardingForm({
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="create-school">School name</Label>
+            <Label htmlFor="create-school">{t.auth.onboarding.schoolName}</Label>
             <div className="relative">
               <RiSchoolLine className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 id="create-school"
                 type="text"
-                placeholder="Lincoln High School"
+                placeholder={t.auth.onboarding.schoolPlaceholder}
                 className="pl-9"
                 aria-invalid={!!errors.schoolName}
                 {...register('schoolName')}
@@ -108,17 +109,16 @@ export function OnboardingForm({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            You&apos;ll be the school&apos;s principal. An organization
-            identifier is generated for you — find it later in Settings.
+            {t.auth.onboarding.principalNote}
           </p>
 
           <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? 'Creating school...' : 'Create school'}
+            {isPending ? t.auth.onboarding.creating : t.auth.onboarding.createSchool}
           </Button>
         </form>
 
         <div className="text-center text-sm">
-          Wrong account?{' '}
+          {t.auth.onboarding.wrongAccount}{' '}
           <button
             type="button"
             onClick={() =>
@@ -129,7 +129,7 @@ export function OnboardingForm({
             disabled={isSigningOut}
             className="underline underline-offset-4"
           >
-            Sign out
+            {t.auth.onboarding.signOut}
           </button>
         </div>
       </CardContent>

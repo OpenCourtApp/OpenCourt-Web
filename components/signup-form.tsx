@@ -17,6 +17,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { t } from '@/lib/strings'
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [serverError, setServerError] = useState('')
@@ -49,9 +50,9 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   return (
     <Card {...props}>
       <CardHeader>
-        <CardTitle>Create your account</CardTitle>
+        <CardTitle>{t.auth.register.title}</CardTitle>
         <CardDescription>
-          You&apos;ll join or create your school in the next step
+          {t.auth.register.subtitle}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -66,11 +67,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           )}
 
           <div className="grid gap-2">
-            <Label htmlFor="name">Full name</Label>
+            <Label htmlFor="name">{t.common.fullName}</Label>
             <Input
               id="name"
               type="text"
-              placeholder="John Doe"
+              placeholder={t.common.fullNamePlaceholder}
               autoComplete="name"
               aria-invalid={!!errors.fullName}
               {...register('fullName')}
@@ -81,11 +82,11 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t.common.email}</Label>
             <Input
               id="email"
               type="email"
-              placeholder="m@example.com"
+              placeholder={t.common.emailPlaceholder}
               autoComplete="email"
               aria-invalid={!!errors.email}
               {...register('email')}
@@ -96,7 +97,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           </div>
 
           <div className="grid gap-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t.common.password}</Label>
             <Input
               id="password"
               type="password"
@@ -117,22 +118,22 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
           </div>
 
           <Button type="submit" disabled={isPending} className="w-full">
-            {isPending ? 'Creating account...' : 'Create account'}
+            {isPending ? t.auth.register.creating : t.auth.register.createAccount}
           </Button>
 
           <div className="relative text-center text-sm">
             <span className="absolute inset-x-0 top-1/2 border-t border-border" />
             <span className="relative bg-card px-2 text-muted-foreground">
-              Or continue with
+              {t.auth.register.orContinue}
             </span>
           </div>
 
           <GoogleSignInButton onError={setServerError} />
 
           <div className="text-center text-sm">
-            Already have an account?{' '}
+            {t.auth.register.haveAccount}{' '}
             <Link href="/login" className="underline underline-offset-4">
-              Sign in
+              {t.auth.register.signIn}
             </Link>
           </div>
         </form>

@@ -1,8 +1,8 @@
 export const GENERIC_COLLABORATOR_ERROR =
-  'Something went wrong. Please try again.'
+  'Algo deu errado. Tente novamente.'
 
 export const NOT_PRINCIPAL_ERROR =
-  'Only principals can manage collaborators.'
+  'Apenas gestores podem gerenciar colaboradores.'
 
 export const MISSING_ADMIN_KEY_ERROR =
-  'The server is not configured for invitations. Add SUPABASE_SERVICE_ROLE_KEY and restart.'
+  'O servidor não está configurado para convites. Adicione SUPABASE_SERVICE_ROLE_KEY e reinicie.'

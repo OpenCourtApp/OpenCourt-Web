@@ -22,7 +22,7 @@ import {
 export type AuthActionResult = { error: string } | undefined
 
 const INVALID_INPUT: AuthActionResult = {
-  error: 'Check the form fields and try again.',
+  error: 'Verifique os campos do formulário e tente novamente.',
 }
 
 export async function signIn(input: SignInInput): Promise<AuthActionResult> {
@@ -117,7 +117,7 @@ export async function acceptInvitation(
   // since the invite link is single-use and expires.
   const isGoogleUser = user.app_metadata?.provider === 'google'
   if (!isGoogleUser && !parsed.data.password) {
-    return { error: 'Choose a password to finish setting up your account.' }
+    return { error: 'Escolha uma senha para concluir a configuração da sua conta.' }
   }
 
   if (parsed.data.password) {

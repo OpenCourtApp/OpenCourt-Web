@@ -1,11 +1,11 @@
 export const GENERIC_BOOKING_ERROR =
-  'Something went wrong. Please try again.'
+  'Algo deu errado. Tente novamente.'
 
 export const BOOKING_CONFLICT_ERROR =
-  'That court is already booked for an overlapping time.'
+  'Essa quadra já está reservada em um horário que se sobrepõe.'
 
 export const NO_ACTIVE_SCHOOL_ERROR =
-  'Select a school before creating a booking.'
+  'Selecione uma escola antes de criar uma reserva.'
 
 export const NOT_ALLOWED_ERROR =
-  'You can only change your own bookings.'
+  'Você só pode alterar suas próprias reservas.'

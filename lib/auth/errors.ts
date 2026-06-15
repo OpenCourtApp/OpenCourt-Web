@@ -1,23 +1,23 @@
 import type { AuthError } from '@supabase/supabase-js'
 
 export const GENERIC_AUTH_ERROR =
-  'Something went wrong while authenticating. Please try again.'
+  'Algo deu errado durante a autenticação. Tente novamente.'
 
 export const OAUTH_CALLBACK_ERROR =
-  'Could not sign in with Google. Please try again.'
+  'Não foi possível entrar com o Google. Tente novamente.'
 
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
-  invalid_credentials: 'Incorrect email or password.',
-  email_not_confirmed: 'Confirm your email before signing in.',
+  invalid_credentials: 'Email ou senha incorretos.',
+  email_not_confirmed: 'Confirme seu email antes de entrar.',
   user_already_exists:
-    'An account with this email already exists. Try signing in instead.',
+    'Já existe uma conta com este email. Tente entrar.',
   email_exists:
-    'An account with this email already exists. Try signing in instead.',
-  weak_password: 'Password is too weak. Use at least 6 characters.',
-  over_request_rate_limit: 'Too many attempts. Wait a moment and try again.',
-  user_banned: 'This account has been disabled. Contact your principal.',
+    'Já existe uma conta com este email. Tente entrar.',
+  weak_password: 'A senha é muito fraca. Use pelo menos 6 caracteres.',
+  over_request_rate_limit: 'Muitas tentativas. Aguarde um momento e tente novamente.',
+  user_banned: 'Esta conta foi desativada. Fale com o gestor.',
   provider_disabled:
-    'Google sign-in is not enabled. Contact your administrator.',
+    'O login com o Google não está habilitado. Fale com o administrador.',
 }
 
 export function friendlyAuthError(error: AuthError): string {
@@ -29,15 +29,15 @@ export function friendlyAuthError(error: AuthError): string {
 
 // Keys match the RAISE EXCEPTION messages in the SQL functions
 const ONBOARDING_ERROR_MESSAGES: Record<string, string> = {
-  not_authenticated:     'Your session has expired. Please sign in again.',
-  no_invitation:         'No pending invitation was found for your email address.',
-  already_member:        'You are already a member of this school.',
-  not_a_member:          'You are not a member of that school.',
-  member_already_exists: 'This person is already a member of your school.',
-  not_authorized:        'Only principals can perform this action.',
-  invitation_not_found:  'Invitation not found or already cancelled.',
-  cannot_remove_self:    'You cannot remove your own account.',
-  cannot_remove_principal: 'Principals cannot be removed.',
+  not_authenticated:     'Sua sessão expirou. Entre novamente.',
+  no_invitation:         'Nenhum convite pendente foi encontrado para o seu email.',
+  already_member:        'Você já é membro desta escola.',
+  not_a_member:          'Você não é membro dessa escola.',
+  member_already_exists: 'Esta pessoa já é membro da sua escola.',
+  not_authorized:        'Apenas gestores podem realizar esta ação.',
+  invitation_not_found:  'Convite não encontrado ou já cancelado.',
+  cannot_remove_self:    'Você não pode remover a sua própria conta.',
+  cannot_remove_principal: 'Gestores não podem ser removidos.',
 }
 
 export function friendlyOnboardingError(message: string): string {

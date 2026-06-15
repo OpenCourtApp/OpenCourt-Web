@@ -1,19 +1,7 @@
-'use client'
+import { redirect } from 'next/navigation'
 
-import { useEffect } from 'react'
-import { useHeader } from '@/components/shared/header-context'
-import { CourtsView } from '@/components/courts/courts-view'
-
+// Courts management moved into Settings → Courts (a principal-only section).
+// Kept as a redirect so old links/bookmarks don't 404.
 export default function CourtsPage() {
-  const { setContent } = useHeader()
-
-  useEffect(() => {
-    setContent({
-      title: 'Courts',
-      description: 'Manage the courts available for booking',
-    })
-    return () => setContent({ title: '' })
-  }, [setContent])
-
-  return <CourtsView />
+  redirect('/settings')
 }

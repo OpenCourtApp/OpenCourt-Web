@@ -1,10 +1,11 @@
 'use client'
 
-import { useEffect, useMemo, useState, type MouseEvent } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Area, AreaChart, ResponsiveContainer, YAxis } from 'recharts'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { handleGlow } from '@/lib/glow'
 import {
   RiArrowDownLine,
   RiArrowUpLine,
@@ -14,6 +15,7 @@ import {
 } from '@remixicon/react'
 import { useBookings } from '@/components/booking/bookings-provider'
 import { OPEN_HOURS, formatTime, timeToDecimal } from '@/lib/bookings/constants'
+import { t } from '@/lib/strings'
 
 function fmtLocal(date: Date, offset = 0) {
   const d = new Date(date)
@@ -22,16 +24,6 @@ function fmtLocal(date: Date, offset = 0) {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
-}
-
-// Light the border arc nearest the cursor by feeding the pointer angle to CSS.
-function handleGlow(e: MouseEvent<HTMLDivElement>) {
-  const el = e.currentTarget
-  const rect = el.getBoundingClientRect()
-  const x = e.clientX - rect.left - rect.width / 2
-  const y = e.clientY - rect.top - rect.height / 2
-  const angle = (Math.atan2(y, x) * (180 / Math.PI) + 360) % 360
-  el.style.setProperty('--start', String(angle + 60))
 }
 
 function StatLabel({ children }: { children: React.ReactNode }) {
@@ -115,17 +107,17 @@ export function StatsRow() {
       <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
-            <StatLabel>On Court Now</StatLabel>
+            <StatLabel>{t.dashboard.stats.onCourtNow}</StatLabel>
             {stats.live ? (
               <Badge className="gap-1.5 bg-success/15 text-success">
                 <span className="relative flex size-2">
                   <span className="absolute inline-flex size-full animate-ping rounded-full bg-success opacity-80" />
                   <span className="relative inline-flex size-2 rounded-full bg-success shadow-[0_0_8px_var(--success)]" />
                 </span>
-                Live
+                {t.dashboard.stats.live}
               </Badge>
             ) : (
-              <Badge variant="secondary">No session</Badge>
+              <Badge variant="secondary">{t.dashboard.stats.noSession}</Badge>
             )}
           </div>
           {stats.live ? (
@@ -143,7 +135,7 @@ export function StatsRow() {
                 <div className="flex items-center justify-between text-xs tabular-nums text-muted-foreground">
                   <span>{formatTime(stats.live.start_time)}</span>
                   <span className="font-medium text-foreground">
-                    {stats.liveRemaining} min remaining
+                    {t.dashboard.stats.minRemaining(stats.liveRemaining)}
                   </span>
                   <span>{formatTime(stats.live.end_time)}</span>
                 </div>
@@ -152,7 +144,7 @@ export function StatsRow() {
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2 text-center text-muted-foreground">
               <RiTimeLine className="size-6 opacity-40" />
-              <p className="text-sm">No active session right now</p>
+              <p className="text-sm">{t.dashboard.stats.noActiveSession}</p>
             </div>
           )}
         </CardContent>
@@ -162,7 +154,7 @@ export function StatsRow() {
       <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
-            <StatLabel>Today&apos;s Bookings</StatLabel>
+            <StatLabel>{t.dashboard.stats.todaysBookings}</StatLabel>
             {stats.trend !== null && stats.trend !== 0 && (
               <Badge
                 className={
@@ -187,7 +179,7 @@ export function StatsRow() {
                   {stats.todaysCount}
                 </span>
                 <span className="text-sm text-muted-foreground">
-                  {stats.todaysCount === 1 ? 'booking' : 'bookings'} today
+                  {t.dashboard.stats.bookingsToday(stats.todaysCount)}
                 </span>
               </div>
               <div className="space-y-1.5">
@@ -220,18 +212,18 @@ export function StatsRow() {
                   </ResponsiveContainer>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Last 7 days · vs{' '}
+                  {t.dashboard.stats.last7DaysVs}{' '}
                   <span className="font-medium text-foreground tabular-nums">
                     {stats.yesterdayCount}
                   </span>{' '}
-                  yesterday
+                  {t.dashboard.stats.yesterday}
                 </p>
               </div>
             </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2 text-center text-muted-foreground">
               <RiCalendarCheckLine className="size-6 opacity-40" />
-              <p className="text-sm">No bookings today yet</p>
+              <p className="text-sm">{t.dashboard.stats.noBookingsToday}</p>
             </div>
           )}
         </CardContent>
@@ -241,7 +233,7 @@ export function StatsRow() {
       <Card size="sm" className="glow-card" onMouseMove={handleGlow}>
         <CardContent className="flex h-full flex-col gap-3">
           <div className="flex items-center justify-between">
-            <StatLabel>Available Slots</StatLabel>
+            <StatLabel>{t.dashboard.stats.availableSlots}</StatLabel>
             {courts.length > 0 && (
               <Badge
                 className={
@@ -250,7 +242,7 @@ export function StatsRow() {
                     : 'bg-success/10 text-success'
                 }
               >
-                {stats.occupancy >= 50 ? 'Busy' : 'Open'}
+                {stats.occupancy >= 50 ? t.dashboard.stats.busy : t.dashboard.stats.open}
               </Badge>
             )}
           </div>
@@ -259,20 +251,20 @@ export function StatsRow() {
               <p className="text-3xl font-semibold tabular-nums">
                 {stats.available}
                 <span className="ml-1.5 text-sm font-normal text-muted-foreground">
-                  / {stats.capacity} available
+                  {t.dashboard.stats.available(stats.capacity)}
                 </span>
               </p>
               <div className="space-y-1.5">
                 <Progress value={stats.occupancy} />
                 <p className="text-xs text-muted-foreground">
-                  {stats.occupancy}% occupancy today
+                  {t.dashboard.stats.occupancyToday(stats.occupancy)}
                 </p>
               </div>
             </div>
           ) : (
             <div className="flex flex-1 flex-col items-center justify-center gap-2 py-2 text-center text-muted-foreground">
               <RiDoorOpenLine className="size-6 opacity-40" />
-              <p className="text-sm">No court data available</p>
+              <p className="text-sm">{t.dashboard.stats.noCourtData}</p>
             </div>
           )}
         </CardContent>

@@ -23,7 +23,7 @@ export async function createBooking(
 ): Promise<BookingActionResult> {
   const parsed = createBookingSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: 'Check the form fields and try again.' }
+    return { error: 'Verifique os campos do formulário e tente novamente.' }
   }
 
   const supabase = await createClient()
@@ -73,7 +73,7 @@ export async function updateBooking(
 ): Promise<BookingActionResult> {
   const parsed = updateBookingSchema.safeParse(input)
   if (!parsed.success) {
-    return { error: 'Check the form fields and try again.' }
+    return { error: 'Verifique os campos do formulário e tente novamente.' }
   }
 
   const supabase = await createClient()

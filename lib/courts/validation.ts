@@ -3,8 +3,8 @@ import { z } from 'zod'
 export const courtNameSchema = z
   .string()
   .trim()
-  .min(1, 'Enter a court name')
-  .max(40, 'Keep it under 40 characters')
+  .min(1, 'Insira o nome da quadra')
+  .max(40, 'Use no máximo 40 caracteres')
 
 export const createCourtSchema = z.object({
   name: courtNameSchema,

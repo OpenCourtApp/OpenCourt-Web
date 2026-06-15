@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { t } from '@/lib/strings'
 
 /**
  * Blocks the app for principals whose school has no courts yet: the first
@@ -45,8 +46,8 @@ export function FirstCourtGate({ children }: { children: ReactNode }) {
         return
       }
       await refresh()
-      toast.success('Court added', {
-        description: 'Your school is ready for bookings.',
+      toast.success(t.courts.firstGate.addedTitle, {
+        description: t.courts.firstGate.addedDesc,
       })
     })
   }
@@ -60,21 +61,20 @@ export function FirstCourtGate({ children }: { children: ReactNode }) {
           </div>
           <div className="space-y-1.5">
             <h2 className="text-xl font-semibold tracking-tight">
-              Add your first court
+              {t.courts.firstGate.title}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Before your school can take bookings, register the first court.
-              You can add more or rename it anytime in the Courts page.
+              {t.courts.firstGate.desc}
             </p>
           </div>
           <form onSubmit={handleSubmit} className="grid w-full gap-3">
             <div className="grid gap-2 text-left">
-              <Label htmlFor="first-court-name">Court name</Label>
+              <Label htmlFor="first-court-name">{t.courts.firstGate.nameLabel}</Label>
               <Input
                 id="first-court-name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Center Court"
+                placeholder={t.courts.firstGate.namePlaceholder}
                 maxLength={40}
                 autoFocus
               />
@@ -84,7 +84,7 @@ export function FirstCourtGate({ children }: { children: ReactNode }) {
               size="lg"
               disabled={isPending || !name.trim()}
             >
-              {isPending ? 'Adding…' : 'Add court and continue'}
+              {isPending ? t.courts.firstGate.submitting : t.courts.firstGate.submit}
               <RiArrowRightLine className="size-4" />
             </Button>
           </form>

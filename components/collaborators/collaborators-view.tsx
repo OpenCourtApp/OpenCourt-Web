@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { CollaboratorsTable } from '@/components/collaborators/collaborators-table'
 import { AddCollaboratorDialog } from '@/components/collaborators/add-collaborator-dialog'
+import { t } from '@/lib/strings'
 
 type CollaboratorsViewProps = {
   members: ActiveMember[]
@@ -30,12 +31,12 @@ export function CollaboratorsView({
 
   useEffect(() => {
     setContent({
-      title: 'Collaborators',
-      description: 'People with access to your school',
+      title: t.header.collaborators.title,
+      description: t.header.collaborators.description,
       cta: isPrincipal ? (
         <Button onClick={() => setAddOpen(true)}>
           <RiUserAddLine className="size-4" />
-          Invite collaborator
+          {t.collaborators.invite}
         </Button>
       ) : undefined,
     })
@@ -69,13 +70,13 @@ export function CollaboratorsView({
         <Card className="flex flex-1 items-center justify-center">
           <EmptyState
             icon={<RiTeamLine />}
-            title="No collaborators yet"
-            description="Invite team members to manage who has access to your school."
+            title={t.collaborators.emptyTitle}
+            description={t.collaborators.emptyDesc}
             action={
               isPrincipal ? (
                 <Button onClick={() => setAddOpen(true)}>
                   <RiUserAddLine className="size-4" />
-                  Invite collaborator
+                  {t.collaborators.invite}
                 </Button>
               ) : undefined
             }
@@ -88,7 +89,7 @@ export function CollaboratorsView({
               <RiSearchLine className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search by name or email"
+                placeholder={t.collaborators.searchPlaceholder}
                 className="pl-9"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -99,8 +100,8 @@ export function CollaboratorsView({
             {filtered.length === 0 ? (
               <EmptyState
                 icon={<RiSearchLine />}
-                title="No matches"
-                description={`No collaborators match "${search.trim()}".`}
+                title={t.collaborators.noMatches}
+                description={t.collaborators.noMatchesDesc(search.trim())}
               />
             ) : (
               <CollaboratorsTable

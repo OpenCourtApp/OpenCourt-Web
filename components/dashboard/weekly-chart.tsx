@@ -19,11 +19,12 @@ import {
 import { EmptyState } from '@/components/shared/empty-state'
 import { RiBarChartLine } from '@remixicon/react'
 import { useBookings } from '@/components/booking/bookings-provider'
+import { t } from '@/lib/strings'
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const WEEKDAYS = t.dashboard.weekly.weekdays
 
 const chartConfig = {
-  count: { label: 'Bookings', color: 'var(--chart-1)' },
+  count: { label: t.dashboard.weekly.seriesLabel, color: 'var(--chart-1)' },
 } satisfies ChartConfig
 
 export function WeeklyChart() {
@@ -51,8 +52,8 @@ export function WeeklyChart() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div className="space-y-1">
-            <CardTitle>Weekly court usage</CardTitle>
-            <CardDescription>Mon – Sun</CardDescription>
+            <CardTitle>{t.dashboard.weekly.title}</CardTitle>
+            <CardDescription>{t.dashboard.weekly.range}</CardDescription>
           </div>
         </div>
       </CardHeader>
@@ -130,8 +131,8 @@ export function WeeklyChart() {
         ) : (
           <EmptyState
             icon={<RiBarChartLine />}
-            title="No booking data yet"
-            description="Court usage will appear here once bookings are recorded."
+            title={t.dashboard.weekly.empty}
+            description={t.dashboard.weekly.emptyHint}
             className="flex-1"
           />
         )}

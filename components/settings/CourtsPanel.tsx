@@ -14,7 +14,13 @@ import { createClient } from '@/lib/supabase/client'
 import { createCourt, deleteCourt, renameCourt } from '@/lib/courts/actions'
 import { useBookings } from '@/components/booking/bookings-provider'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,8 +35,15 @@ import {
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { EmptyState } from '@/components/shared/empty-state'
+import { t } from '@/lib/strings'
 
-export function CourtsView() {
+/**
+ * Court management lives here — a principal-only Settings section alongside
+ * Authorization, not a standalone page. Members never manage courts (they pick
+ * them in the booking form / calendar filters), so this returns null for them.
+ * Mutations are still guarded by RLS (principal-only INSERT/UPDATE/DELETE).
+ */
+export function CourtsPanel() {
   const { courts, bookings, refresh } = useBookings()
   const [isPrincipal, setIsPrincipal] = useState(false)
   const [newName, setNewName] = useState('')
@@ -65,7 +78,7 @@ export function CourtsView() {
       }
       setNewName('')
       await refresh()
-      toast.success('Court added')
+      toast.success(t.courts.added)
     })
   }
 
@@ -80,7 +93,7 @@ export function CourtsView() {
       }
       setEditingId(null)
       await refresh()
-      toast.success('Court renamed')
+      toast.success(t.courts.renamed)
     })
   }
 
@@ -93,38 +106,41 @@ export function CourtsView() {
         return
       }
       await refresh()
-      toast.success('Court removed')
+      toast.success(t.courts.removed)
     })
   }
 
+  // Principal-only surface (matches AuthorizationPanel).
+  if (!isPrincipal) return null
+
   return (
     <Card>
+      <CardHeader>
+        <CardTitle>{t.courts.title}</CardTitle>
+        <CardDescription>
+          {t.courts.description}
+        </CardDescription>
+      </CardHeader>
       <CardContent className="space-y-4">
-        {isPrincipal && (
-          <form onSubmit={handleAdd} className="flex gap-2">
-            <Input
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              placeholder="New court name"
-              maxLength={40}
-              aria-label="New court name"
-            />
-            <Button type="submit" disabled={isPending || !newName.trim()}>
-              <RiAddLine className="size-4" />
-              Add court
-            </Button>
-          </form>
-        )}
+        <form onSubmit={handleAdd} className="flex gap-2">
+          <Input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder={t.courts.newNamePlaceholder}
+            maxLength={40}
+            aria-label={t.courts.newNamePlaceholder}
+          />
+          <Button type="submit" disabled={isPending || !newName.trim()}>
+            <RiAddLine className="size-4" />
+            {t.courts.add}
+          </Button>
+        </form>
 
         {courts.length === 0 ? (
           <EmptyState
             icon={<RiBasketballLine />}
-            title="No courts yet"
-            description={
-              isPrincipal
-                ? 'Add the first court so members can start booking.'
-                : 'The principal has not registered any courts yet.'
-            }
+            title={t.courts.emptyTitle}
+            description={t.courts.emptyDesc}
             className="py-8"
           />
         ) : (
@@ -158,7 +174,7 @@ export function CourtsView() {
                         autoFocus
                         maxLength={40}
                         className="h-8 flex-1"
-                        aria-label={`Rename ${court.name}`}
+                        aria-label={t.courts.renameAria(court.name)}
                       />
                       <Button
                         type="submit"
@@ -166,13 +182,13 @@ export function CourtsView() {
                         disabled={isPending || !editingName.trim()}
                       >
                         <RiCheckLine className="size-4" />
-                        Save
+                        {t.courts.save}
                       </Button>
                       <Button
                         type="button"
                         variant="ghost"
                         size="icon-sm"
-                        aria-label="Cancel rename"
+                        aria-label={t.courts.cancelRename}
                         onClick={() => setEditingId(null)}
                       >
                         <RiCloseLine className="size-4" />
@@ -186,66 +202,64 @@ export function CourtsView() {
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {count === 0
-                            ? 'No bookings yet'
-                            : `${count} ${count === 1 ? 'booking' : 'bookings'}`}
+                            ? t.courts.noBookings
+                            : t.courts.bookingCount(count)}
                         </p>
                       </div>
                       {count > 0 && (
                         <Badge variant="secondary" className="hidden sm:inline-flex">
-                          In use
+                          {t.courts.inUse}
                         </Badge>
                       )}
-                      {isPrincipal && (
-                        <div className="flex shrink-0 items-center gap-1.5">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            disabled={isPending}
-                            onClick={() => {
-                              setEditingId(court.id)
-                              setEditingName(court.name)
-                            }}
-                          >
-                            <RiPencilLine className="size-4" />
-                            Rename
-                          </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon-sm"
-                                className="text-destructive hover:text-destructive"
-                                aria-label={`Delete ${court.name}`}
-                                disabled={isPending}
+                      <div className="flex shrink-0 items-center gap-1.5">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isPending}
+                          onClick={() => {
+                            setEditingId(court.id)
+                            setEditingName(court.name)
+                          }}
+                        >
+                          <RiPencilLine className="size-4" />
+                          {t.courts.rename}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="icon-sm"
+                              className="text-destructive hover:text-destructive"
+                              aria-label={t.courts.deleteAria(court.name)}
+                              disabled={isPending}
+                            >
+                              <RiDeleteBinLine className="size-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="duration-75 data-open:slide-in-from-bottom-1 data-open:zoom-in-98">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>
+                                {t.courts.deleteTitle(court.name)}
+                              </AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {count > 0
+                                  ? t.courts.deleteBlocked(count)
+                                  : t.courts.deleteConfirm}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t.common.cancel}</AlertDialogCancel>
+                              <AlertDialogAction
+                                variant="destructive"
+                                disabled={count > 0}
+                                onClick={() => handleDelete(court.id)}
                               >
-                                <RiDeleteBinLine className="size-4" />
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="duration-75 data-open:slide-in-from-bottom-1 data-open:zoom-in-98">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>
-                                  Delete {court.name}?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  {count > 0
-                                    ? `This court has ${count} ${count === 1 ? 'booking' : 'bookings'} and cannot be deleted until they are removed.`
-                                    : 'This removes the court from the booking form and calendar. This action cannot be undone.'}
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  variant="destructive"
-                                  disabled={count > 0}
-                                  onClick={() => handleDelete(court.id)}
-                                >
-                                  Delete court
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      )}
+                                {t.courts.deleteAction}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
                     </>
                   )}
                 </li>

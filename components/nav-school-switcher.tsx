@@ -9,6 +9,7 @@ import {
 } from '@remixicon/react'
 import { switchSchool } from '@/lib/auth/actions'
 import type { UserSchool } from '@/types'
+import { ROLE_LABELS, t } from '@/lib/strings'
 import { OpenCourtMark } from '@/components/shared/oc-logo'
 import {
   DropdownMenu,
@@ -23,12 +24,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
-
-const ROLE_LABELS: Record<string, string> = {
-  principal:   'Principal',
-  teacher:     'Teacher',
-  student_rep: 'Student Rep',
-}
 
 type NavSchoolSwitcherProps = {
   schools: UserSchool[]
@@ -63,7 +58,7 @@ export function NavSchoolSwitcher({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <OpenCourtMark className="size-4" />
+                <OpenCourtMark className="size-[30px]" />
               </div>
               <div className="grid flex-1 text-left leading-tight group-data-[collapsible=icon]:hidden">
                 <span className="truncate text-sm font-semibold">
@@ -83,7 +78,7 @@ export function NavSchoolSwitcher({
             sideOffset={4}
           >
             <DropdownMenuLabel className="text-xs text-muted-foreground">
-              Organizations
+              {t.schoolSwitcher.organizations}
             </DropdownMenuLabel>
             {schools.map((school) => {
               const isActive = school.school_id === activeSchoolId
@@ -110,7 +105,7 @@ export function NavSchoolSwitcher({
                 <div className="flex size-6 items-center justify-center rounded-sm border bg-transparent">
                   <RiAddLine className="size-4" />
                 </div>
-                Create organization
+                {t.schoolSwitcher.createOrganization}
               </Link>
             </DropdownMenuItem>
           </DropdownMenuContent>

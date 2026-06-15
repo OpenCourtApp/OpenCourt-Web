@@ -3,11 +3,12 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useTheme } from '@/components/shared/theme-provider'
 import { cn } from '@/lib/utils'
+import { t } from '@/lib/strings'
 
 const themes = [
   {
     value: 'light' as const,
-    label: 'Light',
+    label: t.settings.appearance.light,
     preview: (
       <div className="h-20 w-36 overflow-hidden rounded-md border bg-white">
         <div className="h-4 bg-neutral-900" />
@@ -25,7 +26,7 @@ const themes = [
   },
   {
     value: 'dark' as const,
-    label: 'Dark',
+    label: t.settings.appearance.dark,
     preview: (
       <div className="h-20 w-36 overflow-hidden rounded-md border border-neutral-700 bg-neutral-900">
         <div className="h-4 bg-neutral-100" />
@@ -43,7 +44,7 @@ const themes = [
   },
   {
     value: 'system' as const,
-    label: 'System',
+    label: t.settings.appearance.system,
     preview: (
       <div className="h-20 w-36 overflow-hidden rounded-md border">
         <div className="flex h-full">
@@ -73,11 +74,11 @@ export function AppearancePanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Appearance</CardTitle>
-        <CardDescription>Choose how OpenCourt looks on your device</CardDescription>
+        <CardTitle>{t.settings.appearance.title}</CardTitle>
+        <CardDescription>{t.settings.appearance.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <div role="radiogroup" aria-label="Theme" className="flex flex-wrap gap-6">
+        <div role="radiogroup" aria-label={t.settings.appearance.themeAria} className="flex flex-wrap gap-6">
           {themes.map(({ value, label, preview }) => (
             <button
               key={value}

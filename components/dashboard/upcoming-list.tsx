@@ -13,6 +13,8 @@ import { EmptyState } from '@/components/shared/empty-state'
 import { RiCalendarCheckLine, RiMapPinLine, RiPlayMiniFill } from '@remixicon/react'
 import { useBookings } from '@/components/booking/bookings-provider'
 import { courtColor, formatTime, timeToDecimal } from '@/lib/bookings/constants'
+import { handleGlow } from '@/lib/glow'
+import { t } from '@/lib/strings'
 
 const railColor: Record<1 | 2 | 3 | 4 | 5, string> = {
   1: 'bg-chart-1',
@@ -65,9 +67,9 @@ export function UpcomingList() {
   }, [bookings, now])
 
   return (
-    <Card size="sm" className="h-full">
+    <Card size="sm" className="h-full glow-card" onMouseMove={handleGlow}>
       <CardHeader className="flex-row items-center justify-between gap-2">
-        <CardTitle>Upcoming Today</CardTitle>
+        <CardTitle>{t.dashboard.upcoming.title}</CardTitle>
         {upcoming.length > 0 && (
           <Badge variant="secondary" className="tabular-nums">
             {upcoming.length}
@@ -112,11 +114,11 @@ export function UpcomingList() {
                     {b.live ? (
                       <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-1.5 py-0.5 text-[0.7rem] font-medium tabular-nums text-primary ring-1 ring-inset ring-primary/20">
                         <RiPlayMiniFill className="size-3" />
-                        {durationLabel(b.endsIn)} left
+                        {t.dashboard.upcoming.timeLeft(durationLabel(b.endsIn))}
                       </span>
                     ) : (
                       <span className="text-xs font-medium tabular-nums text-muted-foreground">
-                        in {durationLabel(b.startsIn)}
+                        {t.dashboard.upcoming.startsIn(durationLabel(b.startsIn))}
                       </span>
                     )}
                   </div>
@@ -127,8 +129,8 @@ export function UpcomingList() {
         ) : (
           <EmptyState
             icon={<RiCalendarCheckLine />}
-            title="No bookings left today"
-            description="New bookings for today will show up here."
+            title={t.dashboard.upcoming.noneLeft}
+            description={t.dashboard.upcoming.noneLeftHint}
             className="flex-1"
           />
         )}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { RiGoogleFill } from '@remixicon/react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { t } from '@/lib/strings'
 
 /**
  * Google OAuth must be initiated in the browser: the browser Supabase client
@@ -34,7 +35,7 @@ export function GoogleSignInButton({
     // On success the browser is redirected to Google automatically; we only get
     // here synchronously if starting the flow failed.
     if (error) {
-      onError('Could not start Google sign-in. Please try again.')
+      onError(t.auth.google.startError)
       setIsPending(false)
     }
   }
@@ -48,7 +49,7 @@ export function GoogleSignInButton({
       disabled={isPending}
     >
       <RiGoogleFill className="size-4" />
-      {isPending ? 'Redirecting…' : 'Continue with Google'}
+      {isPending ? t.auth.google.redirecting : t.auth.google.continue}
     </Button>
   )
 }

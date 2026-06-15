@@ -4,8 +4,8 @@ import type { Role } from '@/types'
 export const ROLES = ['principal', 'teacher', 'student_rep'] as const satisfies readonly Role[]
 export const INVITABLE_ROLES = ['teacher', 'student_rep'] as const satisfies readonly Role[]
 
-const email    = z.email('Enter a valid email address.')
-const fullName = z.string().trim().min(2, 'Enter your full name.')
+const email    = z.email('Insira um endereço de email válido.')
+const fullName = z.string().trim().min(2, 'Insira seu nome completo.')
 
 // Password policy for new password creation (email/password signup, invitee
 // password-set, profile password change). Google users never set a password,
@@ -13,21 +13,21 @@ const fullName = z.string().trim().min(2, 'Enter your full name.')
 const PASSWORD_SPECIAL_CHAR = /[!@#$%^&*(),.?":{}|<>]/
 
 export const PASSWORD_HINT =
-  'At least 6 characters, including one special character.'
+  'Pelo menos 6 caracteres, incluindo um caractere especial.'
 
 export const passwordSchema = z
   .string()
-  .min(6, 'Password must be at least 6 characters.')
+  .min(6, 'A senha deve ter pelo menos 6 caracteres.')
   .regex(
     PASSWORD_SPECIAL_CHAR,
-    'Password must contain at least one special character.'
+    'A senha deve conter pelo menos um caractere especial.'
   )
 
 const password = passwordSchema
 
 export const signInSchema = z.object({
   email,
-  password: z.string().min(1, 'Enter your password.'),
+  password: z.string().min(1, 'Insira sua senha.'),
 })
 
 export const signUpSchema = z.object({
@@ -38,7 +38,7 @@ export const signUpSchema = z.object({
 
 export const createSchoolSchema = z.object({
   fullName,
-  schoolName: z.string().trim().min(3, 'Enter your school name.'),
+  schoolName: z.string().trim().min(3, 'Insira o nome da sua escola.'),
 })
 
 // Server-side schema. Password is optional here ONLY because Google OAuth
@@ -59,7 +59,7 @@ export const acceptInvitationWithPasswordSchema = z.object({
 
 export const inviteMemberSchema = z.object({
   email,
-  role: z.enum(INVITABLE_ROLES, { error: 'Select a role.' }),
+  role: z.enum(INVITABLE_ROLES, { error: 'Selecione uma função.' }),
 })
 
 export type SignInInput            = z.infer<typeof signInSchema>

@@ -19,16 +19,15 @@ import {
 import {
   RiDashboardLine,
   RiCalendarCheckLine,
-  RiBasketballLine,
   RiTeamLine,
 } from '@remixicon/react'
 import type { Role, UserSchool } from '@/types'
+import { t } from '@/lib/strings'
 
 const navItems: NavItem[] = [
-  { title: 'Dashboard',      url: '/dashboard',     icon: <RiDashboardLine /> },
-  { title: 'Calendar',       url: '/calendar',      icon: <RiCalendarCheckLine /> },
-  { title: 'Courts',         url: '/courts',        icon: <RiBasketballLine /> },
-  { title: 'Collaborators',  url: '/collaborators', icon: <RiTeamLine /> },
+  { title: t.nav.dashboard,     url: '/dashboard',     icon: <RiDashboardLine /> },
+  { title: t.nav.calendar,      url: '/calendar',      icon: <RiCalendarCheckLine /> },
+  { title: t.nav.collaborators, url: '/collaborators', icon: <RiTeamLine /> },
 ]
 
 /** Avatar + two lines, collapses to the avatar-sized square in icon mode. */

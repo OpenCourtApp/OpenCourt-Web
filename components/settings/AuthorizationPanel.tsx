@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Skeleton } from '@/components/ui/skeleton'
+import { t } from '@/lib/strings'
 
 export function AuthorizationPanel() {
   const [token, setToken] = useState<string | null>(null)
@@ -43,7 +44,7 @@ export function AuthorizationPanel() {
   function copyToken() {
     if (!token) return
     navigator.clipboard.writeText(token).then(() => {
-      toast.success('Copied to clipboard')
+      toast.success(t.settings.authorization.copied)
     })
   }
 
@@ -52,12 +53,12 @@ export function AuthorizationPanel() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Organization Identifier</CardTitle>
-        <CardDescription>Your school&apos;s unique identifier</CardDescription>
+        <CardTitle>{t.settings.authorization.title}</CardTitle>
+        <CardDescription>{t.settings.authorization.description}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="org-token">Access token</Label>
+          <Label htmlFor="org-token">{t.settings.authorization.accessToken}</Label>
           {token === null ? (
             <Skeleton className="h-9 w-full" />
           ) : (
@@ -66,7 +67,7 @@ export function AuthorizationPanel() {
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Copy token"
+                aria-label={t.settings.authorization.copyAria}
                 onClick={copyToken}
               >
                 <RiFileCopyLine className="size-4" />
@@ -76,10 +77,9 @@ export function AuthorizationPanel() {
         </div>
         <Alert>
           <RiInformationLine />
-          <AlertTitle>Reserved for future use</AlertTitle>
+          <AlertTitle>{t.settings.authorization.alertTitle}</AlertTitle>
           <AlertDescription>
-            This identifier is generated when you create a school. It is not
-            used for login or access control.
+            {t.settings.authorization.alertDesc}
           </AlertDescription>
         </Alert>
       </CardContent>

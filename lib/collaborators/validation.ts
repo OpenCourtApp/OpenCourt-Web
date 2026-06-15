@@ -4,8 +4,8 @@ import type { Role } from '@/types'
 export const INVITABLE_ROLES = ['teacher', 'student_rep'] as const satisfies readonly Role[]
 
 export const inviteMemberSchema = z.object({
-  email: z.email('Enter a valid email address.'),
-  role: z.enum(INVITABLE_ROLES, { error: 'Select a role.' }),
+  email: z.email('Insira um endereço de email válido.'),
+  role: z.enum(INVITABLE_ROLES, { error: 'Selecione uma função.' }),
 })
 
 export const removeMemberSchema = z.object({

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { LoginForm } from '@/components/login-form'
 import { OpenCourtLogo, OpenCourtMark } from '@/components/shared/oc-logo'
 import { OAUTH_CALLBACK_ERROR } from '@/lib/auth/errors'
+import { t } from '@/lib/strings'
 
 function CourtLines({ className }: { className?: string }) {
   return (
@@ -55,7 +56,7 @@ export default async function LoginPage({
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 flex items-center gap-3 p-10">
           <OpenCourtMark className="size-6 shrink-0 text-white" />
-          <p className="text-sm text-white/80">Court scheduling for schools.</p>
+          <p className="text-sm text-white/80">{t.auth.login.hero}</p>
         </div>
       </div>
     </div>
