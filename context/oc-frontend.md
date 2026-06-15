@@ -249,7 +249,7 @@ Rules:
 - **Respect reduced motion:** wrap any movement/scale entrance in `motion-safe:`
   so it's disabled under `prefers-reduced-motion`. Pure color/opacity fades may stay
   unprefixed (they degrade to an instant change).
-- No gradients, glow, or glassmorphism on UI surfaces (see `oc-ui.md`).
+- Gradients allowed when subtle and token-derived (see `oc-ui.md` for the bar); no glow or glassmorphism on UI surfaces.
 
 **Follow-up (not implemented):** animating collaborator rows *out* on
 `removeMember`/`revokeInvitation` needs client-side exit state (the rows come from a
