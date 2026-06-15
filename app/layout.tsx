@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { DM_Sans } from 'next/font/google'
 import { ThemeProvider } from '@/components/shared/theme-provider'
-import { Toaster } from 'sonner'
+import { ThemedToaster } from '@/components/shared/themed-toaster'
 import './globals.css'
 
 const dmSans = DM_Sans({
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className={dmSans.className}>
         <ThemeProvider>
           {children}
-          <Toaster richColors closeButton />
+          <ThemedToaster />
         </ThemeProvider>
       </body>
     </html>
