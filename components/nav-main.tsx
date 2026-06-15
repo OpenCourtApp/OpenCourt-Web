@@ -29,7 +29,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                 asChild
                 isActive={isActive}
                 tooltip={item.title}
-                className="text-sidebar-foreground/70 hover:bg-sidebar-accent/50 data-active:text-sidebar-accent-foreground"
+                className="text-sidebar-foreground/80 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-foreground data-active:text-sidebar-accent-foreground"
               >
                 <Link href={item.url}>
                   {item.icon}

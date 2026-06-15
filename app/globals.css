@@ -153,8 +153,30 @@
   body {
     @apply bg-background text-foreground;
   }
-  button:not(:disabled), [role="button"]:not(:disabled) {
+  /* Cursor affordances per situation: clickable things get a pointer, disabled
+     things get not-allowed, text fields keep the text caret (browser default). */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="menuitem"],
+  [role="menuitemcheckbox"],
+  [role="menuitemradio"],
+  [role="option"],
+  [role="tab"],
+  [role="switch"],
+  [role="radio"],
+  [role="checkbox"],
+  label[for],
+  summary,
+  select:not(:disabled) {
     cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled="true"],
+  [data-disabled] {
+    cursor: not-allowed;
+  }
+  [aria-busy="true"] {
+    cursor: progress;
   }
   html {
     @apply font-sans;
@@ -180,6 +202,7 @@
 .glow-card {
   --start: 0;
   position: relative;
+  transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
 .glow-card::before {
@@ -205,6 +228,23 @@
   pointer-events: none;
 }
 
+/* Premium hover: the card lifts a touch and casts a soft primary-tinted halo
+   (luminous in dark mode where --primary is light, a gentle shade in light
+   mode), while the mouse-tracking border arc brightens. */
+.glow-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -16px color-mix(in oklab, var(--primary) 65%, transparent);
+}
+
 .glow-card:hover::before {
-  opacity: 0.35;
+  opacity: 0.5;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .glow-card {
+    transition: box-shadow 220ms ease;
+  }
+  .glow-card:hover {
+    transform: none;
+  }
 }
