@@ -8,6 +8,7 @@ import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Field, FieldLabel, FieldContent, FieldError } from '@/components/ui/field'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
@@ -360,9 +361,8 @@ export function ProfileForm() {
           <Field>
             <FieldLabel htmlFor="password">{t.settings.profile.newPassword}</FieldLabel>
             <FieldContent>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 placeholder={t.settings.profile.passwordKeep}
                 aria-describedby="profile-password-hint"
                 {...register('password')}

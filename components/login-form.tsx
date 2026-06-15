@@ -9,6 +9,7 @@ import { signInSchema, type SignInInput } from '@/lib/auth/validation'
 import { GoogleSignInButton } from '@/components/google-sign-in-button'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import { t } from '@/lib/strings'
@@ -80,9 +81,8 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
         </div>
         <div className="grid gap-2">
           <Label htmlFor="password">{t.common.password}</Label>
-          <Input
+          <PasswordInput
             id="password"
-            type="password"
             autoComplete="current-password"
             aria-invalid={!!errors.password}
             {...register('password')}
