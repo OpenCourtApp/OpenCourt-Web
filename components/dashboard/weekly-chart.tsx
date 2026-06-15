@@ -39,7 +39,10 @@ export function WeeklyChart() {
     const weekStart = startOfWeek(now, { weekStartsOn: 1 })
     const counts = WEEKDAYS.map((day) => ({ day, count: 0 }))
     for (const b of bookings) {
-      const index = differenceInCalendarDays(new Date(b.date + 'T00:00:00Z'), weekStart)
+      // Parse the booking date in LOCAL time (no 'Z'). `weekStart` and
+      // differenceInCalendarDays are local, so a UTC parse shifts every date a
+      // day earlier in negative-UTC zones (e.g. BRT-3) — dropping Mondays.
+      const index = differenceInCalendarDays(new Date(b.date + 'T00:00:00'), weekStart)
       if (index >= 0 && index <= 6) counts[index].count += 1
     }
     return counts
