@@ -34,6 +34,8 @@
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-secondary: var(--secondary);
+  --color-btn-foreground: var(--btn-foreground);
+  --color-btn: var(--btn);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary: var(--primary);
   --color-popover-foreground: var(--popover-foreground);
@@ -77,6 +79,12 @@
   --popover-foreground: oklch(0.17 0 0);
   --primary: oklch(0.40 0 0);
   --primary-foreground: oklch(0.985 0 0);
+  /* Solid high-contrast CTA fill. Deliberately a rich off-black (not pure #000)
+     so the primary button reads bold and professional without the harshness of
+     true black. Pairs with a near-white label (~16:1). Decoupled from
+     --foreground so the dark-mode value can be softened — see .dark. */
+  --btn: oklch(0.21 0 0);
+  --btn-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.96 0 0);
   --secondary-foreground: oklch(0.25 0 0);
   --muted: oklch(0.96 0 0);
@@ -119,6 +127,10 @@
   --popover-foreground: oklch(0.985 0 0);
   --primary: oklch(0.72 0 0);
   --primary-foreground: oklch(0.20 0 0);
+  /* Off-white (not pure #fff): still high-contrast against the dark UI (~15:1)
+     but softened from near-white so the solid CTA doesn't glare. */
+  --btn: oklch(0.93 0 0);
+  --btn-foreground: oklch(0.20 0 0);
   --secondary: oklch(0.27 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.27 0 0);
