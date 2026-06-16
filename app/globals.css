@@ -202,7 +202,6 @@
 .glow-card {
   --start: 0;
   position: relative;
-  transition: transform 220ms ease, box-shadow 220ms ease;
 }
 
 .glow-card::before {
@@ -228,23 +227,7 @@
   pointer-events: none;
 }
 
-/* Premium hover: the card lifts a touch and casts a soft primary-tinted halo
-   (luminous in dark mode where --primary is light, a gentle shade in light
-   mode), while the mouse-tracking border arc brightens. */
-.glow-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -16px color-mix(in oklab, var(--primary) 65%, transparent);
-}
-
+/* Hover: only the mouse-tracking border arc brightens. No lift, no drop halo. */
 .glow-card:hover::before {
   opacity: 0.5;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glow-card {
-    transition: box-shadow 220ms ease;
-  }
-  .glow-card:hover {
-    transform: none;
-  }
 }

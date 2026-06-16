@@ -1,7 +1,7 @@
 'use client'
 
 import { useTransition } from 'react'
-import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import {
   RiAddLine,
   RiCheckLine,
@@ -34,6 +34,7 @@ export function NavSchoolSwitcher({
   schools,
   activeSchoolId,
 }: NavSchoolSwitcherProps) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   const activeSchool =
@@ -100,13 +101,14 @@ export function NavSchoolSwitcher({
               )
             })}
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/onboarding" className="gap-2">
-                <div className="flex size-6 items-center justify-center rounded-sm border bg-transparent">
-                  <RiAddLine className="size-4" />
-                </div>
-                {t.schoolSwitcher.createOrganization}
-              </Link>
+            <DropdownMenuItem
+              className="gap-2"
+              onSelect={() => router.push('/onboarding')}
+            >
+              <div className="flex size-6 items-center justify-center rounded-sm border bg-transparent">
+                <RiAddLine className="size-4" />
+              </div>
+              {t.schoolSwitcher.createOrganization}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

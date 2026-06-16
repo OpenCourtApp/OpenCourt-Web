@@ -75,13 +75,16 @@ export async function updateSession(
     return redirectTo('/onboarding')
   }
 
-  // Fully onboarded: allow /welcome so they can accept additional invites
-  if (pathname === '/welcome') {
+  // Fully onboarded users still reach these intentionally from the in-app
+  // school switcher: /welcome to accept another school's invite, /onboarding
+  // to create an additional organization. Bouncing them to /dashboard is what
+  // made the "Criar organização" button appear to do nothing.
+  if (pathname === '/welcome' || pathname === '/onboarding') {
     return supabaseResponse
   }
 
-  // Redirect away from public/onboarding paths
-  if (isPublicPath(pathname) || pathname === '/onboarding') {
+  // Redirect away from public/auth paths
+  if (isPublicPath(pathname)) {
     return redirectTo('/dashboard')
   }
 
