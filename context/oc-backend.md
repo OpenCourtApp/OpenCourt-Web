@@ -4,8 +4,8 @@
 
 - **Project ref:** `pmllugwxnbfmspbtzmzm`
 - **URL:** `https://pmllugwxnbfmspbtzmzm.supabase.co`
-- **Anon key:** `sb_publishable_L5KExncuKXOHws3SuhdA1Q_3sUVlOnQ`
-- **DB password:** `OpenCourt@34555`
+- **Anon key:** see `.env.example` (publishable key — safe to expose to the browser)
+- **DB password:** not stored in the repo (Supabase dashboard → Project Settings → Database)
 - **Location:** Fly.io (Frankfurt)
 - **Email confirmation:** Disabled in Auth Settings
 
@@ -15,7 +15,7 @@
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://pmllugwxnbfmspbtzmzm.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_L5KExncuKXOHws3SuhdA1Q_3sUVlOnQ
+NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-anon-key>
 # SERVER-ONLY secret (Dashboard → Project Settings → API → service_role).
 # Bypasses RLS; required by inviteMember (admin.inviteUserByEmail).
 # Restart `next dev` after setting.
