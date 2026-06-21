@@ -241,5 +241,5 @@
 
 /* Hover: only the mouse-tracking border arc brightens. No lift, no drop halo. */
 .glow-card:hover::before {
-  opacity: 0.5;
+  opacity: 0.3;
 }
