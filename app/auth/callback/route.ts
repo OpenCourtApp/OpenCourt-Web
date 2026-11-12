@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
@@ -12,12 +12,12 @@ import { createClient } from '@/lib/supabase/server'
 //    are opened in the recipient's browser, which never started a PKCE flow, so
 //    there is NO verifier cookie and `exchangeCodeForSession` would fail.
 //    `verifyOtp` authenticates straight from the emailed token instead.
-export async function GET(request: Request) {
-  const { searchParams, origin } = new URL(request.url)
-  const code = searchParams.get('code')
-  const tokenHash = searchParams.get('token_hash')
-  const type = searchParams.get('type') as EmailOtpType | null
-  const nextParam = searchParams.get('next') ?? '/dashboard'
+export async function GET(request: NextRequest) {
+  const requestUrl = new URL(request.url)
+  const code = requestUrl.searchParams.get('code')
+  const tokenHash = requestUrl.searchParams.get('token_hash')
+  const type = requestUrl.searchParams.get('type') as EmailOtpType | null
+  const nextParam = requestUrl.searchParams.get('next') ?? '/dashboard'
   // Only allow relative paths to prevent open redirects
   const next = nextParam.startsWith('/') ? nextParam : '/dashboard'
 
@@ -30,14 +30,9 @@ export async function GET(request: Request) {
       : null
 
   if (result && !result.error) {
-    // Behind a load balancer the request origin is the internal host, so
-    // prefer the forwarded host when building the redirect URL.
-    const forwardedHost = request.headers.get('x-forwarded-host')
-    if (process.env.NODE_ENV === 'development' || !forwardedHost) {
-      return NextResponse.redirect(`${origin}${next}`)
-    }
-    return NextResponse.redirect(`https://${forwardedHost}${next}`)
+    const response = NextResponse.redirect(new URL(next, requestUrl.origin))
+    return response
   }
 
-  return NextResponse.redirect(`${origin}/login?error=oauth_failed`)
+  return NextResponse.redirect(new URL('/login?error=oauth_failed', requestUrl.origin))
 }
