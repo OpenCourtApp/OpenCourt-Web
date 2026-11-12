@@ -25,7 +25,10 @@ const INVALID_INPUT: AuthActionResult = {
   error: 'Verifique os campos do formulário e tente novamente.',
 }
 
-export async function signIn(input: SignInInput): Promise<AuthActionResult> {
+export async function signIn(
+  input: SignInInput,
+  next?: string
+): Promise<AuthActionResult> {
   const parsed = signInSchema.safeParse(input)
   if (!parsed.success) return INVALID_INPUT
 
@@ -36,7 +39,7 @@ export async function signIn(input: SignInInput): Promise<AuthActionResult> {
     return { error: friendlyAuthError(error) }
   }
 
-  redirect('/dashboard')
+  redirect(next ?? '/dashboard')
 }
 
 export async function signUp(input: SignUpInput): Promise<AuthActionResult> {

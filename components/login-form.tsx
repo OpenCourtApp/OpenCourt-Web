@@ -16,9 +16,15 @@ import { t } from '@/lib/strings'
 
 type LoginFormProps = React.ComponentProps<'form'> & {
   initialError?: string
+  next?: string
 }
 
-export function LoginForm({ initialError, className, ...props }: LoginFormProps) {
+export function LoginForm({
+  initialError,
+  className,
+  next,
+  ...props
+}: LoginFormProps) {
   const [serverError, setServerError] = useState(initialError ?? '')
   const [isPending, startTransition] = useTransition()
 
@@ -34,7 +40,7 @@ export function LoginForm({ initialError, className, ...props }: LoginFormProps)
   const onSubmit = handleSubmit((values) => {
     setServerError('')
     startTransition(async () => {
-      const result = await signIn(values)
+      const result = await signIn(values, next)
       if (result?.error) {
         setServerError(result.error)
       }

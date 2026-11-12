@@ -4,7 +4,7 @@ import { headers } from 'next/headers'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import { createAdminClient, hasAdminKey } from '@/lib/supabase/admin'
+import { hasAdminKey } from '@/lib/supabase/admin'
 import { friendlyOnboardingError } from '@/lib/auth/errors'
 import {
   GENERIC_COLLABORATOR_ERROR,
@@ -17,6 +17,7 @@ import {
   revokeInvitationSchema,
   type InviteMemberInput,
 } from '@/lib/collaborators/validation'
+import { sendInviteEmail } from '@/lib/email/resend'
 
 export type CollaboratorActionResult = { error: string } | undefined
 
@@ -57,39 +58,26 @@ export async function inviteMember(
   const { email, role } = parsed.data
 
   // invite_member validates principal + dedup, writes invitations row
-  const { error: rpcError } = await supabase.rpc('invite_member', {
-    p_email: email,
-    p_role: role,
-  })
+  const { data: invitationId, error: rpcError } = await supabase.rpc(
+    'invite_member',
+    { p_email: email, p_role: role }
+  )
 
   if (rpcError) {
     return { error: friendlyOnboardingError(rpcError.message) }
   }
 
   const origin = await resolveOrigin()
-  const admin  = createAdminClient()
 
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-    email,
-    {
-      redirectTo: `${origin}/auth/callback?next=/welcome`,
-      data: { invited: true },
-    }
-  )
+  // Envia email de convite via Resend com link para o callback
+  const inviteUrl = `${origin}/auth/callback?invitation_id=${invitationId}&type=invite&next=/welcome`
 
-  // An existing account is NOT a failure: invite_member already wrote the
-  // invitations row, so the user reaches /welcome on their next sign-in.
-  // GoTrue signals this with the `email_exists` / `user_already_exists` code;
-  // the human message varies ("User already registered" vs. "...has already
-  // been registered"), so match the code first and fall back to either wording.
-  const alreadyRegistered =
-    inviteError != null &&
-    (inviteError.code === 'email_exists' ||
-      inviteError.code === 'user_already_exists' ||
-      /already (?:been )?registered/i.test(inviteError.message))
-
-  if (inviteError && !alreadyRegistered) {
-    return { error: GENERIC_COLLABORATOR_ERROR }
+  try {
+    await sendInviteEmail({ email, inviteUrl })
+  } catch {
+    // Se falhar o envio do e-mail, o convite já está no banco.
+    // O usuário pode tentar reenviar depois.
+    return { error: 'Convite criado, mas falha ao enviar e-mail. Tente reenviar.' }
   }
 
   revalidatePath('/collaborators')

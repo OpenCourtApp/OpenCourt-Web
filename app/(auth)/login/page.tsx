@@ -25,9 +25,9 @@ function CourtLines({ className }: { className?: string }) {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; invitation_id?: string; next?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, next } = await searchParams
   const initialError = error === 'oauth_failed' ? OAUTH_CALLBACK_ERROR : undefined
 
   return (
@@ -40,7 +40,7 @@ export default async function LoginPage({
         </div>
         <div className="flex flex-1 items-center justify-center">
           <div className="w-full max-w-xs">
-            <LoginForm initialError={initialError} />
+            <LoginForm initialError={initialError} next={next} />
           </div>
         </div>
       </div>
