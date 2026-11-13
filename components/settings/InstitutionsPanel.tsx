@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DangerZone } from '@/components/settings/DangerZone'
 import { ROLE_LABELS, t } from '@/lib/strings'
 
 function RoleBadge({ role }: { role: Role }) {
@@ -67,60 +68,75 @@ export function InstitutionsPanel() {
     })
   }
 
+  const activeSchool =
+    schools?.find((school) => school.school_id === activeSchoolId) ?? null
+
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>{t.settings.institutions.title}</CardTitle>
-        <CardDescription>
-          {t.settings.institutions.description}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        {schools === null ? (
-          <div className="space-y-3">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-          </div>
-        ) : schools.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            {t.settings.institutions.none}
-          </p>
-        ) : (
-          <ul className="divide-y">
-            {schools.map((school) => {
-              const isActive = school.school_id === activeSchoolId
-              return (
-                <li key={school.school_id} className="flex items-center gap-3 py-3">
-                  <div className="flex flex-1 items-center gap-3 truncate">
-                    <RiCheckLine
-                      className={`size-4 shrink-0 transition-opacity ${
-                        isActive ? 'text-success opacity-100' : 'opacity-0'
-                      }`}
-                    />
-                    <span className="truncate font-medium">
-                      {school.school_name}
-                    </span>
-                    <RoleBadge role={school.role} />
-                  </div>
-                  {!isActive && schools.length > 1 && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      disabled={isPending}
-                      onClick={() => handleSwitch(school.school_id)}
-                    >
-                      {t.settings.institutions.switch}
-                    </Button>
-                  )}
-                  {isActive && (
-                    <span className="text-xs text-muted-foreground">{t.settings.institutions.active}</span>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        )}
-      </CardContent>
-    </Card>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>{t.settings.institutions.title}</CardTitle>
+          <CardDescription>
+            {t.settings.institutions.description}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {schools === null ? (
+            <div className="space-y-3">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : schools.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              {t.settings.institutions.none}
+            </p>
+          ) : (
+            <ul className="divide-y">
+              {schools.map((school) => {
+                const isActive = school.school_id === activeSchoolId
+                return (
+                  <li key={school.school_id} className="flex items-center gap-3 py-3">
+                    <div className="flex flex-1 items-center gap-3 truncate">
+                      <RiCheckLine
+                        className={`size-4 shrink-0 transition-opacity ${
+                          isActive ? 'text-success opacity-100' : 'opacity-0'
+                        }`}
+                      />
+                      <span className="truncate font-medium">
+                        {school.school_name}
+                      </span>
+                      <RoleBadge role={school.role} />
+                    </div>
+                    {!isActive && schools.length > 1 && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isPending}
+                        onClick={() => handleSwitch(school.school_id)}
+                      >
+                        {t.settings.institutions.switch}
+                      </Button>
+                    )}
+                    {isActive && (
+                      <span className="text-xs text-muted-foreground">{t.settings.institutions.active}</span>
+                    )}
+                  </li>
+                )
+              })}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
+
+      {activeSchool && (
+        <DangerZone
+          school={{
+            id: activeSchool.school_id,
+            name: activeSchool.school_name,
+            isPrincipal: activeSchool.role === 'principal',
+          }}
+        />
+      )}
+    </div>
   )
 }

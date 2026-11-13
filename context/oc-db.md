@@ -175,11 +175,17 @@ Principal-only → sets status `revoked` on the matching pending invitation.
 ### `remove_member(p_user_id)`
 Principal-only → refuses to remove another principal or self → deletes membership in active school → clears removed user's `active_school_id` and JWT claims if they pointed to this school.
 
+### `delete_school(p_school_id)`
+Principal-only (JWT) → requires `p_school_id` to be the caller's active school (`not_active_school`) → re-homes every member whose active school is being deleted (moves `users.active_school_id` + JWT claims to their next membership by `created_at`, or clears both when none) → `DELETE FROM schools` (cascades memberships, invitations, courts, bookings). Hard delete, irreversible.
+
+### `leave_school()`
+Non-principal member of the active school → raises `no_active_school` / `not_a_member` / `principal_cannot_leave` → deletes own membership in the active school → switches `users.active_school_id` + JWT claims to the next membership (or clears both when none).
+
 ---
 
 ## JWT Claims
 
-`auth.users.raw_user_meta_data` carries `active_school_id` and `role` (role in the active school). Updated by `create_school`, `accept_invitation`, and `switch_school`. The app calls `supabase.auth.refreshSession()` after each so the new claims reach the cookie and the proxy.
+`auth.users.raw_user_meta_data` carries `active_school_id` and `role` (role in the active school). Updated by `create_school`, `accept_invitation`, `switch_school`, `delete_school`, and `leave_school`. The app calls `supabase.auth.refreshSession()` after each so the new claims reach the cookie and the proxy.
 
 ---
 

@@ -38,6 +38,9 @@ const ONBOARDING_ERROR_MESSAGES: Record<string, string> = {
   invitation_not_found:  'Convite não encontrado ou já cancelado.',
   cannot_remove_self:    'Você não pode remover a sua própria conta.',
   cannot_remove_principal: 'Gestores não podem ser removidos.',
+  not_active_school:     'Esta não é a sua escola ativa.',
+  no_active_school:      'Você não tem uma escola ativa.',
+  principal_cannot_leave:'Gestores não podem sair da escola. Exclua a escola ou transfira a gestão.',
 }
 
 export function friendlyOnboardingError(message: string): string {

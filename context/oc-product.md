@@ -73,7 +73,8 @@ Combined table of active members (from `memberships`) and pending invitations. C
 
 ### Settings (`/settings`)
 - **Profile**: name, email, password inputs.
-- **Institutions**: list of all schools the user belongs to. Role Badge + active check. "Switch" button for non-active schools (>1 school). 
+- **Institutions**: list of all schools the user belongs to. Role Badge + active check. "Switch" button for non-active schools (>1 school).
+- **Danger zone** (inside Institutions): the principal can hard-delete the active school after typing its name to confirm; non-principal members can leave the active school. Both move the user to another school when they belong to one, otherwise back to `/onboarding`.
 - **Authorization**: principal-only. Organization identifier (`access_token`) with Copy button. Not used for login.
 - **Notifications**: email toggle switches.
 - **Appearance**: theme selector.
@@ -88,5 +89,6 @@ Combined table of active members (from `memberships`) and pending invitations. C
 4. **Active school in JWT** — `raw_user_meta_data` carries `active_school_id` + `role` (for the active school). Refreshed after `create_school`, `accept_invitation`, and `switch_school`.
 5. **Access token is an identifier only** — the `OC-XXXX-XXXX` token is the organization's identifier, reserved for future use. It is not used for login, joining, or any auth flow.
 6. **Principal protected** — no destructive action on a principal's row; principals cannot be removed.
-7. **No booking overlap** — exclusion constraint at DB level + UI conflict warning (planned).
-8. **Email confirmation** — disabled in Supabase Auth Settings.
+7. **School deletion is owner-only and cascades** — only the principal of the active school can hard-delete it, which cascades all memberships, invitations, courts, and bookings. The deleting principal loses the `principal` role and active school; affected members (including the deleter) are re-homed to another school if they have one, otherwise sent back to `/onboarding`.
+8. **No booking overlap** — exclusion constraint at DB level + UI conflict warning (planned).
+9. **Email confirmation** — disabled in Supabase Auth Settings.
