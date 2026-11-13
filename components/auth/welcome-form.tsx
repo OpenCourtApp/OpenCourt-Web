@@ -59,12 +59,15 @@ export function WelcomeForm({
   const onSubmit = handleSubmit((values) => {
     setServerError('')
     startTransition(async () => {
+      console.error('[WelcomeForm] submit started, isGoogleUser:', isGoogleUser)
       const result = await acceptInvitation(
         isGoogleUser ? { fullName: values.fullName } : values
       )
+      console.error('[WelcomeForm] action result:', result)
       if ('error' in result) {
         setServerError(result.error)
       } else {
+        console.error('[WelcomeForm] pushing /dashboard')
         router.push('/dashboard')
       }
     })

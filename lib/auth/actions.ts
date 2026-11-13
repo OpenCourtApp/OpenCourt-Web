@@ -145,6 +145,12 @@ export async function acceptInvitation(
     return { error: GENERIC_AUTH_ERROR }
   }
 
+  const {
+    data: { user: userAfterRefresh },
+  } = await supabase.auth.getUser()
+  console.error('[acceptInvitation] RPC ok, refresh ok, active_school_id:',
+    userAfterRefresh?.user_metadata?.active_school_id)
+
   return { success: true }
 }
 
