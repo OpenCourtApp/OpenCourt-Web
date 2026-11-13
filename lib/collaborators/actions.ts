@@ -17,7 +17,7 @@ import {
   revokeInvitationSchema,
   type InviteMemberInput,
 } from '@/lib/collaborators/validation'
-import { sendInviteEmail } from '@/lib/email/resend'
+import { sendInviteEmail } from '@/lib/email/brevo'
 
 export type CollaboratorActionResult = { error: string } | undefined
 
@@ -74,7 +74,8 @@ export async function inviteMember(
 
   try {
     await sendInviteEmail({ email, inviteUrl })
-  } catch {
+  } catch (err) {
+    console.error('[inviteMember] Brevo error:', err)
     // Se falhar o envio do e-mail, o convite já está no banco.
     // O usuário pode tentar reenviar depois.
     return { error: 'Convite criado, mas falha ao enviar e-mail. Tente reenviar.' }
