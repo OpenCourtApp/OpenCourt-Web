@@ -1,5 +1,6 @@
 "use client"
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
@@ -25,6 +26,7 @@ export function LoginForm({
   next,
   ...props
 }: LoginFormProps) {
+  const router = useRouter()
   const [serverError, setServerError] = useState(initialError ?? '')
   const [isPending, startTransition] = useTransition()
 
@@ -41,8 +43,10 @@ export function LoginForm({
     setServerError('')
     startTransition(async () => {
       const result = await signIn(values, next)
-      if (result?.error) {
+      if ('error' in result) {
         setServerError(result.error)
+      } else {
+        router.push(result.next)
       }
     })
   })

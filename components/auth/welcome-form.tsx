@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { useState, useTransition } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -38,6 +39,7 @@ export function WelcomeForm({
   defaultFullName,
   isGoogleUser,
 }: WelcomeFormProps) {
+  const router = useRouter()
   const [serverError, setServerError] = useState('')
   const [isPending, startTransition] = useTransition()
 
@@ -60,8 +62,10 @@ export function WelcomeForm({
       const result = await acceptInvitation(
         isGoogleUser ? { fullName: values.fullName } : values
       )
-      if (result?.error) {
+      if ('error' in result) {
         setServerError(result.error)
+      } else {
+        router.push('/dashboard')
       }
     })
   })

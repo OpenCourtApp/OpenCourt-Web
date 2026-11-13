@@ -28,9 +28,9 @@ const INVALID_INPUT: AuthActionResult = {
 export async function signIn(
   input: SignInInput,
   next?: string
-): Promise<AuthActionResult> {
+): Promise<{ success: true; next: string } | { error: string }> {
   const parsed = signInSchema.safeParse(input)
-  if (!parsed.success) return INVALID_INPUT
+  if (!parsed.success) return { error: 'Verifique os campos do formulário e tente novamente.' }
 
   const supabase = await createClient()
   const { error } = await supabase.auth.signInWithPassword(parsed.data)
@@ -39,7 +39,7 @@ export async function signIn(
     return { error: friendlyAuthError(error) }
   }
 
-  redirect(next ?? '/dashboard')
+  return { success: true, next: next ?? '/dashboard' }
 }
 
 export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
@@ -102,9 +102,9 @@ export async function createSchool(
 
 export async function acceptInvitation(
   input: AcceptInvitationInput
-): Promise<AuthActionResult> {
+): Promise<{ success: true } | { error: string }> {
   const parsed = acceptInvitationSchema.safeParse(input)
-  if (!parsed.success) return INVALID_INPUT
+  if (!parsed.success) return { error: 'Verifique os campos do formulário e tente novamente.' }
 
   const supabase = await createClient()
   const {
@@ -145,7 +145,7 @@ export async function acceptInvitation(
     return { error: GENERIC_AUTH_ERROR }
   }
 
-  redirect('/dashboard')
+  return { success: true }
 }
 
 export async function switchSchool(
