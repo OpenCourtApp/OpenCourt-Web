@@ -13,7 +13,6 @@ import {
   createSchoolSchema,
   signInSchema,
   signUpSchema,
-  type AcceptInvitationInput,
   type CreateSchoolInput,
   type SignInInput,
   type SignUpInput,
@@ -100,11 +99,26 @@ export async function createSchool(
   redirect('/dashboard')
 }
 
+export type AcceptInvitationState = { error: string } | null
+
 export async function acceptInvitation(
-  input: AcceptInvitationInput
-): Promise<{ success: true } | { error: string }> {
-  const parsed = acceptInvitationSchema.safeParse(input)
-  if (!parsed.success) return { error: 'Verifique os campos do formulário e tente novamente.' }
+  _prevState: AcceptInvitationState,
+  formData: FormData
+): Promise<AcceptInvitationState> {
+  const rawFullName = formData.get('fullName')
+  const rawPassword = formData.get('password')
+
+  const parsed = acceptInvitationSchema.safeParse({
+    fullName: typeof rawFullName === 'string' ? rawFullName : '',
+    password:
+      typeof rawPassword === 'string' && rawPassword.length > 0
+        ? rawPassword
+        : undefined,
+  })
+
+  if (!parsed.success) {
+    return { error: 'Verifique os campos do formulário e tente novamente.' }
+  }
 
   const supabase = await createClient()
   const {
@@ -145,13 +159,9 @@ export async function acceptInvitation(
     return { error: GENERIC_AUTH_ERROR }
   }
 
-  const {
-    data: { user: userAfterRefresh },
-  } = await supabase.auth.getUser()
-  console.error('[acceptInvitation] RPC ok, refresh ok, active_school_id:',
-    userAfterRefresh?.user_metadata?.active_school_id)
-
-  return { success: true }
+  // Redirect on the server so the refreshed session cookies (active_school_id)
+  // travel with the redirect response and the proxy lets /dashboard through.
+  redirect('/dashboard')
 }
 
 export async function switchSchool(

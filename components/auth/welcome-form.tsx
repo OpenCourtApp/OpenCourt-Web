@@ -1,7 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
-import { useState, useTransition } from 'react'
+import { useActionState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { acceptInvitation } from '@/lib/auth/actions'
@@ -39,13 +38,13 @@ export function WelcomeForm({
   defaultFullName,
   isGoogleUser,
 }: WelcomeFormProps) {
-  const router = useRouter()
-  const [serverError, setServerError] = useState('')
-  const [isPending, startTransition] = useTransition()
+  const [state, formAction, isPending] = useActionState(acceptInvitation, null)
 
+  // react-hook-form drives the inline, as-you-type validation messages. The
+  // actual submission goes through the Server Action below, so the form keeps
+  // working even if client validation state is stale.
   const {
     register,
-    handleSubmit,
     formState: { errors },
   } = useForm<AcceptInvitationInput>({
     // Google invitees only confirm their name; everyone else must set a password.
@@ -54,23 +53,6 @@ export function WelcomeForm({
     ),
     mode: 'onChange',
     defaultValues: { fullName: defaultFullName, password: '' },
-  })
-
-  const onSubmit = handleSubmit((values) => {
-    setServerError('')
-    startTransition(async () => {
-      console.error('[WelcomeForm] submit started, isGoogleUser:', isGoogleUser)
-      const result = await acceptInvitation(
-        isGoogleUser ? { fullName: values.fullName } : values
-      )
-      console.error('[WelcomeForm] action result:', result)
-      if ('error' in result) {
-        setServerError(result.error)
-      } else {
-        console.error('[WelcomeForm] pushing /dashboard')
-        router.push('/dashboard')
-      }
-    })
   })
 
   const schoolName = invitation.schools?.name ?? t.auth.welcome.yourSchool
@@ -85,13 +67,13 @@ export function WelcomeForm({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={onSubmit} noValidate className="grid gap-4">
-          {serverError && (
+        <form action={formAction} noValidate className="grid gap-4">
+          {state?.error && (
             <div
               role="alert"
               className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
             >
-              {serverError}
+              {state.error}
             </div>
           )}
 

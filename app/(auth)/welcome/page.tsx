@@ -13,7 +13,11 @@ import {
 } from '@/components/ui/card'
 import { signOut } from '@/lib/auth/actions'
 
-export default async function WelcomePage() {
+export default async function WelcomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ invitation_id?: string }>
+}) {
   const supabase = await createClient()
   const {
     data: { user },
@@ -23,13 +27,22 @@ export default async function WelcomePage() {
     redirect('/login')
   }
 
-  // Find a pending, non-expired invitation for the authenticated email
-  const { data: invitation } = await supabase
+  // Find the pending, non-expired invitation referenced by the invite link.
+  // Falling back to "any pending invitation" when the id is missing keeps the
+  // page usable for direct visits, but avoids maybeSingle() blowing up when a
+  // user happens to have more than one pending invite.
+  const { invitation_id } = await searchParams
+  let invitationQuery = supabase
     .from('invitations')
     .select('*, schools(name)')
     .eq('status', 'pending')
     .gte('expires_at', new Date().toISOString())
-    .maybeSingle()
+
+  if (invitation_id) {
+    invitationQuery = invitationQuery.eq('id', invitation_id)
+  }
+
+  const { data: invitation } = await invitationQuery.maybeSingle()
 
   const defaultFullName =
     (user.user_metadata?.full_name as string | undefined) ??
