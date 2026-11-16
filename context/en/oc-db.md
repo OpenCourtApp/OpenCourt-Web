@@ -102,9 +102,10 @@ principal can INSERT/UPDATE/DELETE.
 | created_at | timestamptz | DEFAULT now()                                |
 
 RLS: members of the active school can SELECT; INSERT requires
-`booked_by = auth.uid()` and the active school; DELETE allowed to the owner
-or the principal. Overlap prevention is enforced in the `createBooking`
-server action (`lib/bookings/actions.ts`), not by a DB constraint.
+`booked_by = auth.uid()` and the active school; UPDATE/DELETE allowed to the
+owner or the principal. Overlap prevention is enforced in the `createBooking` /
+`updateBooking` server actions (`lib/bookings/actions.ts`), not by a DB
+constraint.
 
 ---
 
@@ -148,7 +149,8 @@ to avoid recursion. `memberships` policies never reference the `users` table.
 
 **`handle_new_user()`** (AFTER INSERT ON auth.users) — creates the `public.users`
 profile with `id`, `email`, `full_name` (from metadata), `active_school_id = NULL`.
-Uses `ON CONFLICT (id) DO NOTHING` — `inviteUserByEmail` also fires this trigger.
+Uses `ON CONFLICT (id) DO NOTHING` — any `auth.users` insert (email sign-up or
+Google OAuth) fires this trigger.
 
 **`sync_user_email()`** (AFTER UPDATE OF email ON auth.users) — keeps `public.users.email`
 in sync when the user changes their email.
@@ -210,3 +212,7 @@ export interface Invitation {
 }
 export type UserSchool = { school_id: string; school_name: string; role: Role }
 ```
+
+---
+
+Português: [`../pt-br/oc-db.md`](../pt-br/oc-db.md)

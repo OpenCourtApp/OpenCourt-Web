@@ -33,10 +33,10 @@ app/
 ### Login (`/login`)
 2-column layout. Left: `OpenCourtLogo` + LoginForm. Right: hero image + gradient.
 `LoginForm` (`components/login-form.tsx`) is email + password → `signIn()`, plus
-a Google button and a "Sign up" link. There is **no** passwordless/magic-link
-option on `/login`: the only magic link in the app is the principal's email
-invitation (see `inviteMember` / oc-backend.md), which lands invitees on
-`/welcome`.
+an optional Google button (shown only when the Google provider is configured) and
+a "Sign up" link. There is **no** passwordless login on `/login`: the only
+outbound invitation is the principal's email (sent via Brevo — see
+`inviteMember` / oc-backend.md), which lands invitees on `/welcome`.
 
 ### Register (`/register`)
 Single column. `OpenCourtLogo` + SignupForm (Card, max-w-sm).
@@ -256,3 +256,7 @@ Rules:
 server component re-render after `revalidatePath`, so they currently vanish abruptly).
 Track exiting ids in `collaborators-view.tsx`, apply `animate-out fade-out-0`, then
 revalidate — deferred to avoid client/server state coupling here.
+
+---
+
+Português: [`../pt-br/oc-frontend.md`](../pt-br/oc-frontend.md)

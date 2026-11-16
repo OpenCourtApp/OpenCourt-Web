@@ -15,7 +15,7 @@ view occupancy, and manage who has access.
 | Framework    | Next.js 16.2.7 (App Router)    |
 | UI           | shadcn/ui (Radix Maia style)   |
 | Styling      | Tailwind CSS v4                |
-| Auth         | Supabase Auth                  |
+| Auth         | Supabase Auth (e-mail + senha; Google opcional) |
 | Database     | Supabase (PostgreSQL)          |
 | ORM          | Supabase JS client (no Prisma) |
 | Deployment   | Vercel                         |
@@ -90,5 +90,11 @@ Combined table of active members (from `memberships`) and pending invitations. C
 5. **Access token is an identifier only** — the `OC-XXXX-XXXX` token is the organization's identifier, reserved for future use. It is not used for login, joining, or any auth flow.
 6. **Principal protected** — no destructive action on a principal's row; principals cannot be removed.
 7. **School deletion is owner-only and cascades** — only the principal of the active school can hard-delete it, which cascades all memberships, invitations, courts, and bookings. The deleting principal loses the `principal` role and active school; affected members (including the deleter) are re-homed to another school if they have one, otherwise sent back to `/onboarding`.
-8. **No booking overlap** — exclusion constraint at DB level + UI conflict warning (planned).
+8. **No booking overlap** — enforced in the `createBooking` / `updateBooking`
+   server actions (overlap query scoped to the same court + day); conflicts are
+   rejected in the UI. No DB-level exclusion constraint.
 9. **Email confirmation** — disabled in Supabase Auth Settings.
+
+---
+
+Português: [`../pt-br/oc-product.md`](../pt-br/oc-product.md)

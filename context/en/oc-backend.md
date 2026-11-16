@@ -13,20 +13,56 @@
 
 ## Environment Variables (`.env.local`, documented in `.env.example`)
 
-```
-NEXT_PUBLIC_SUPABASE_URL=https://pmllugwxnbfmspbtzmzm.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=<publishable-anon-key>
-# SERVER-ONLY secret (Dashboard → Project Settings → API → service_role).
-# Bypasses RLS; required by inviteMember (admin.inviteUserByEmail).
-# Restart `next dev` after setting.
+The canonical template lives at the repo root in `.env.example` — copy it to
+`.env.local` and fill in the values. Full contents:
+
+```dotenv
+# OpenCourt — variáveis de ambiente
+# Copie este arquivo para .env.local e preencha com seus valores.
+# Nunca commite o .env.local com credenciais reais.
+
+# ============================================================
+# Supabase (obrigatório)
+# ============================================================
+
+# URL do projeto Supabase. Obtenha em:
+#   Supabase Dashboard → Project Settings → API → Project URL
+NEXT_PUBLIC_SUPABASE_URL=
+
+# Anon key (public safe). Obtenha em:
+#   Supabase Dashboard → Project Settings → API → anon public key
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# Service role key (server-only secret). Obtenha em:
+#   Supabase Dashboard → Project Settings → API → service_role key
+#   ⚠️ Nunca exponha este valor no frontend nem commitá-lo.
 SUPABASE_SERVICE_ROLE_KEY=
-# Optional fallback origin for OAuth redirects (defaults to Origin header)
-# NEXT_PUBLIC_SITE_URL=
+
+# ============================================================
+# Brevo (envio de convites por email)
+# ============================================================
+
+# Chave de API do Brevo (gerada em SMTP & API → API Keys)
+BREVO_API_KEY=
+
+# Endereço de remetente verificado no Brevo (ex: nome <seu-email@gmail.com>)
+BREVO_FROM_EMAIL=
+
+# ============================================================
+# Site URL (opcional, recomendado para produção)
+# ============================================================
+
+# Origem canônica do seu site (ex: https://opencourt.vercel.app).
+# Usado como fallback para redirects de OAuth e links de email.
+NEXT_PUBLIC_SITE_URL=
 ```
 
 `SUPABASE_SERVICE_ROLE_KEY` is **never** exposed to the browser or via a
 `NEXT_PUBLIC_*` var. It is imported only from `'use server'` files via
-`lib/supabase/admin.ts`.
+`lib/supabase/admin.ts` and gates invitations through `hasAdminKey()`.
+
+`BREVO_API_KEY` / `BREVO_FROM_EMAIL` are server-only and used by
+`lib/email/brevo.ts` (`sendInviteEmail`) to send invitation emails.
 
 ---
 
@@ -62,6 +98,12 @@ Email/password flows (server actions). `signUp` redirects to `/onboarding` where
 user creates a school (only path for self-signup).
 
 ### Google OAuth — client-initiated, server-completed
+
+> **Optional facilitator.** Google sign-in is a convenience, not a requirement.
+> The primary, always-available method is email + password. The app works fully
+> without Google configured; only the "Continue with Google" button becomes
+> unavailable. Enable it only if you want the extra provider.
+
 Google sign-in is **not** a server action (a Server Action can't reliably perform the
 cross-origin redirect to Google, and the PKCE code verifier must live in the browser).
 The split:
@@ -107,42 +149,39 @@ The split:
 > `NEXT_PUBLIC_SITE_URL` for this flow — the redirect origin is taken from
 > `window.location.origin` in the browser — so no Vercel env var is required for OAuth.
 
-### The invitation email *is* the magic link
-There is **no** passwordless login on `/login`. The only magic link in the app
-is the one the principal triggers in Collaborators: `inviteMember` →
-`admin.auth.admin.inviteUserByEmail(email, { redirectTo: origin +
-'/auth/callback?next=/welcome' })`. The invitee clicks it, the callback
-authenticates them, and `proxy.ts` routes them to `/welcome` to accept
-(`accept_invitation`). Invite-only and inviter-set roles (business rules #1 & #3)
-hold because the invite row + RPC are the join path — the email link is just
-authentication. On `/welcome` non-Google invitees **must** set a password (it's
-their only credential, applied via `updateUser` in `acceptInvitation`); Google
-invitees set none. Afterwards they sign in normally at `/login` with email +
-that password.
+### Invitation emails are sent via Brevo (not Supabase)
 
-> **Token flow — why the callback uses `verifyOtp`, not `exchangeCodeForSession`,
-> for email links.** An invite email is **admin-generated**: the recipient opens
-> it in a browser that never started a PKCE flow, so there is **no code-verifier
-> cookie** and the `?code=` / `exchangeCodeForSession` path (used by Google OAuth)
-> cannot complete — it fails and dumps the user on `/login?error=oauth_failed`.
-> `app/auth/callback/route.ts` therefore also handles `?token_hash=&type=` via
-> `supabase.auth.verifyOtp({ type, token_hash })`, which authenticates straight
-> from the emailed token (no verifier needed, works cross-device).
->
-> **Dashboard requirement (manual, can't be done from code):** the default
-> Supabase **Invite user** email template uses `{{ .ConfirmationURL }}`, which
-> routes through `/auth/v1/verify` and produces the broken PKCE/hash redirect.
-> Change it (Authentication → Emails → *Invite user*) so the link points straight
-> at our callback with the token hash:
-> ```html
-> <a href="{{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=invite">Accept the invitation</a>
-> ```
-> `{{ .RedirectTo }}` is the `redirectTo` we pass (`<origin>/auth/callback?next=/welcome`),
-> so the link is origin-correct for dev and prod automatically — but `<origin>/auth/callback`
-> must be in the **Redirect URLs** allow-list for `.RedirectTo` to be honored. (If
-> `.RedirectTo` ever comes through empty, hardcode `{{ .SiteURL }}/auth/callback?next=/welcome&token_hash={{ .TokenHash }}&type=invite`
-> instead.) The same applies to the **Magic Link** template if magic-link login is
-> ever enabled.
+There is **no** passwordless login on `/login`. The only outbound invitation is
+the one the principal triggers in Collaborators: `inviteMember` →
+`supabase.rpc('invite_member', …)` writes the `invitations` row and returns its
+`id` → `sendInviteEmail` (`lib/email/brevo.ts`) sends an email through the Brevo
+API with the link
+`<origin>/auth/callback?invitation_id=<id>&type=invite&next=/welcome`.
+Invite-only and inviter-set roles (business rules #1 & #3) hold because the
+invite row + RPC are the join path — the email is just the delivery channel.
+
+`app/auth/callback/route.ts` handles `?invitation_id=` by validating the
+invitation in the database (must be `pending` and not expired):
+
+- **No session** → `/login?invitation_id=<id>&next=/welcome` (sign in or sign up
+  first; the invitation is carried through the login flow).
+- **Session email ≠ invitation email** → `/login?error=invitation_email_mismatch`.
+- **Match** → `/welcome?invitation_id=<id>`.
+
+On `/welcome`, non-Google invitees **must** set a password (their only credential,
+applied via `updateUser` in `acceptInvitation`); Google invitees set none. The
+acceptance itself is the `accept_invitation` RPC, which looks the pending invite
+up by the authenticated email. Afterwards users sign in normally at `/login`.
+
+> **Callback variants.** The callback still supports `?code=` (Google OAuth /
+> PKCE started in the same browser → `exchangeCodeForSession`) and
+> `?token_hash=&type=` (Supabase magic links → `verifyOtp`). Only the Brevo
+> invitation uses `?invitation_id=`.
+
+> **Brevo config (manual, can't be done from code):** verify the sender address
+> in Brevo and set `BREVO_API_KEY` + `BREVO_FROM_EMAIL` in the server environment.
+> The default Supabase **Invite user** email template is no longer used, so no
+> template edit is required.
 
 ### `createSchool(input)`
 Calls `create_school` RPC → `refreshSession()` → `redirect('/dashboard')`.
@@ -170,10 +209,13 @@ Calls `create_school` RPC → `refreshSession()` → `redirect('/dashboard')`.
 - **`actions.ts`** — `'use server'` actions; all call `revalidatePath('/collaborators')`.
 
 ### `inviteMember(input)`
-1. Validates + `requirePrincipal()` (JWT role check)
-2. `supabase.rpc('invite_member', { p_email, p_role })` — writes `invitations` row
-3. `admin.auth.admin.inviteUserByEmail(email, { redirectTo: origin + '/auth/callback?next=/welcome' })` — pre-registers the email and sends the link
-4. If "already registered": swallows the error (invite row exists in DB; user reaches `/welcome` on next sign-in)
+1. Validates + `requirePrincipal()` (JWT role check) + `hasAdminKey()` guard
+2. `supabase.rpc('invite_member', { p_email, p_role })` — writes the `invitations`
+   row and returns its `id`
+3. Builds `inviteUrl = <origin>/auth/callback?invitation_id=<id>&type=invite&next=/welcome`
+   and calls `sendInviteEmail({ email, inviteUrl })` (Brevo)
+4. If the email fails, the invitation row already exists — the action returns a
+   "resend" error and the principal can retry from Collaborators
 
 ### `revokeInvitation(invitationId)`
 `supabase.rpc('revoke_invitation', { p_invitation_id })` → revalidate
@@ -194,3 +236,7 @@ Delegates to `lib/supabase/proxy.ts → updateSession()`:
 - **Authenticated, has `active_school_id`** → allow `/welcome` (accept additional invites); redirect public/onboarding to `/dashboard`
 
 The proxy checks `user.user_metadata?.active_school_id` (not `school_id`).
+
+---
+
+Português: [`../pt-br/oc-backend.md`](../pt-br/oc-backend.md)
