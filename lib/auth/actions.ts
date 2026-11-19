@@ -32,6 +32,91 @@ const INVALID_INPUT: AuthActionResult = {
   error: 'Verifique os campos do formulário e tente novamente.',
 }
 
+const INVALID_CREDENTIALS = 'Email ou senha incorretos.'
+
+/**
+ * Procura os provedores de autenticação de um email.
+ *
+ * A Admin API (`listUsers`) não é confiável neste projeto: o GoTrue responde
+ * 500 ("Database error finding users") ao serializar um dos registros de
+ * auth.users, o que fazia a checagem falhar em silêncio e cair na mensagem
+ * genérica de "email já cadastrado". Por isso consultamos a RPC
+ * `auth_email_providers` (SECURITY DEFINER), que lê auth.users direto.
+ *
+ * Retorna `null` quando o email não está cadastrado ou quando não há service
+ * role key / a migração da RPC ainda não foi aplicada.
+ */
+async function findAuthProviders(email: string): Promise<string[] | null> {
+  if (!hasAdminKey()) return null
+
+  const admin = createAdminClient()
+
+  const { data, error } = await admin.rpc('auth_email_providers', {
+    p_email: email,
+  })
+
+  if (!error && Array.isArray(data)) {
+    return data.length > 0 ? (data as string[]) : null
+  }
+
+  if (error) {
+    console.error('[findAuthProviders] rpc failed:', error)
+  }
+
+  // Fallback para ambientes sem a migração: pagina a Admin API. Se a listagem
+  // falhar, desistimos — é melhor não bloquear o cadastro por um erro nosso.
+  return findProvidersViaAdminApi(admin, email)
+}
+
+/**
+ * Plano B para quando a RPC não existe.
+ *
+ * `listUsers` com `perPage` grande responde 500 neste projeto por causa de um
+ * registro corrompido em auth.users; páginas de 5 usuários funcionam. Tentamos
+ * primeiro a página grande (rápida em ambientes saudáveis) e depois páginas
+ * pequenas, limitadas às 100 contas mais recentes.
+ */
+async function findProvidersViaAdminApi(
+  admin: ReturnType<typeof createAdminClient>,
+  email: string
+): Promise<string[] | null> {
+  const target = email.toLowerCase()
+
+  for (const perPage of [100, 5]) {
+    const maxPages = perPage === 100 ? 10 : 20
+
+    for (let page = 1; page <= maxPages; page++) {
+      const { data, error } = await admin.auth.admin.listUsers({ page, perPage })
+
+      if (error || !data?.users) break
+
+      const found = data.users.find(
+        (candidate) => candidate.email?.toLowerCase() === target
+      )
+
+      if (found) {
+        const providers = new Set<string>()
+        const primary = found.app_metadata?.provider
+        const list = found.app_metadata?.providers
+        if (typeof primary === 'string') providers.add(primary)
+        if (Array.isArray(list)) {
+          for (const provider of list) {
+            if (typeof provider === 'string') providers.add(provider)
+          }
+        }
+        for (const identity of found.identities ?? []) {
+          if (identity.provider) providers.add(identity.provider)
+        }
+        return [...providers]
+      }
+
+      if (data.users.length < perPage) break
+    }
+  }
+
+  return null
+}
+
 export async function signIn(
   input: SignInInput,
   next?: string
@@ -43,6 +128,23 @@ export async function signIn(
   const { error } = await supabase.auth.signInWithPassword(parsed.data)
 
   if (error) {
+    // Email cadastrado apenas via Google não tem senha: o Supabase responde
+    // "credenciais inválidas" e o usuário não entende que precisa usar o
+    // botão do Google. Nesse caso específico trocamos a mensagem.
+    if (error.code === 'invalid_credentials') {
+      const providers = await findAuthProviders(parsed.data.email)
+      const onlyGoogle =
+        providers !== null &&
+        providers.includes('google') &&
+        !providers.includes('email')
+
+      if (onlyGoogle) {
+        return { error: EMAIL_ALREADY_EXISTS_GOOGLE }
+      }
+
+      return { error: INVALID_CREDENTIALS }
+    }
+
     return { error: friendlyAuthError(error) }
   }
 
@@ -59,31 +161,13 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
   // para dar um erro claro e diferenciado (Google vs email/senha) antes de
   // tentar criar a conta — evitando que o usuário pense que cadastrou quando
   // na verdade o email já existe (ex: conta criada pelo Google).
-  if (hasAdminKey()) {
-    const admin = createAdminClient()
-    let page = 1
-    let usersData: { users: Array<{ email?: string | null; app_metadata?: Record<string, unknown> | null }> } | null = null
-
-    // Percorre as páginas de usuários procurando pelo email. O SDK instalado
-    // não suporta filtro por email em listUsers(), então filtramos localmente.
-    do {
-      const { data, error: listError } = await admin.auth.admin.listUsers({
-        page,
-        perPage: 100,
-      })
-      if (listError || !data?.users) break
-      usersData = data
-      const found = usersData.users.find(
-        (u) => u.email?.toLowerCase() === email.toLowerCase()
-      )
-      if (found) {
-        const isGoogle = found.app_metadata?.provider === 'google'
-        return {
-          error: isGoogle ? EMAIL_ALREADY_EXISTS_GOOGLE : EMAIL_ALREADY_EXISTS_PASSWORD,
-        }
-      }
-      page++
-    } while (usersData?.users?.length === 100)
+  const providers = await findAuthProviders(email)
+  if (providers) {
+    return {
+      error: providers.includes('google')
+        ? EMAIL_ALREADY_EXISTS_GOOGLE
+        : EMAIL_ALREADY_EXISTS_PASSWORD,
+    }
   }
 
   const supabase = await createClient()
@@ -109,7 +193,17 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
     Array.isArray(data.user.identities) &&
     data.user.identities.length === 0
   ) {
-    return { error: EMAIL_ALREADY_EXISTS_PASSWORD }
+    // A pré-checagem acima só roda com a service role key disponível; quando
+    // ela falha, tentamos ao menos identificar o provedor para não sugerir
+    // "email e senha" a quem entrou pelo Google.
+    const ghostProviders = await findAuthProviders(email)
+
+    return {
+      error:
+        ghostProviders?.includes('google')
+          ? EMAIL_ALREADY_EXISTS_GOOGLE
+          : EMAIL_ALREADY_EXISTS_PASSWORD,
+    }
   }
 
   redirect(data.session ? '/onboarding' : '/login')
