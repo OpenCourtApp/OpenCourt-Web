@@ -255,6 +255,7 @@ export const t = {
       courts:        'Quadras',
       notifications: 'Notificações',
       appearance:    'Aparência',
+      account:       'Conta',
     },
     profile: {
       title:           'Perfil',
@@ -332,6 +333,18 @@ export const t = {
       light:       'Claro',
       dark:        'Escuro',
       system:      'Sistema',
+    },
+    account: {
+      title:               'Conta',
+      description:         'Ações permanentes e irreversíveis relacionadas à sua conta.',
+      principalBlocked:    'Você é o gestor de uma escola. Transfira a gestão ou exclua a escola antes de excluir sua conta.',
+      principalSchools:    (names: string) => `Escolas em que você é gestor: ${names}.`,
+      deleteButton:        'Excluir minha conta',
+      deleteTitle:         'Excluir sua conta?',
+      deleteBody:          'Esta ação é permanente. Seu perfil, suas reservas e seu acesso a todas as escolas serão removidos. Não é possível desfazer.',
+      deleteConfirmLabel:  (email: string) => `Digite seu email (${email}) para confirmar`,
+      deleteConfirm:       'Excluir conta',
+      deleting:            'Excluindo…',
     },
   },
 

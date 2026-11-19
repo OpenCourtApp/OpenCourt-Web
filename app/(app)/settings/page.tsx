@@ -10,6 +10,7 @@ import { AuthorizationPanel } from '@/components/settings/AuthorizationPanel'
 import { CourtsPanel } from '@/components/settings/CourtsPanel'
 import { NotificationsPanel } from '@/components/settings/NotificationsPanel'
 import { AppearancePanel } from '@/components/settings/AppearancePanel'
+import { AccountDangerZone } from '@/components/settings/AccountDangerZone'
 import {
   RiUserLine,
   RiSchoolLine,
@@ -17,6 +18,7 @@ import {
   RiBasketballLine,
   RiNotification3Line,
   RiPaletteLine,
+  RiUserSettingsLine,
 } from '@remixicon/react'
 import { t } from '@/lib/strings'
 
@@ -27,6 +29,7 @@ const sections = [
   { id: 'courts',        label: t.settings.sections.courts,        icon: RiBasketballLine },
   { id: 'notifications', label: t.settings.sections.notifications, icon: RiNotification3Line },
   { id: 'appearance',    label: t.settings.sections.appearance,    icon: RiPaletteLine },
+  { id: 'account',       label: t.settings.sections.account,       icon: RiUserSettingsLine },
 ] as const
 
 type SectionId = (typeof sections)[number]['id']
@@ -127,6 +130,7 @@ export default function SettingsPage() {
         <section id="courts"        className="scroll-mt-4"><CourtsPanel /></section>
         <section id="notifications" className="scroll-mt-4"><NotificationsPanel /></section>
         <section id="appearance"    className="scroll-mt-4"><AppearancePanel /></section>
+        <section id="account"       className="scroll-mt-4"><AccountDangerZone /></section>
       </main>
     </div>
   )
