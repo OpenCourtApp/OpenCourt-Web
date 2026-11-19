@@ -100,6 +100,18 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
     return { error: friendlyAuthError(error) }
   }
 
+  // O Supabase retorna um usuário "fantasma" (identities vazio) quando o email
+  // já está cadastrado e a confirmação de email está ativa — sem erro, para não
+  // revelar a existência da conta. Sem esta checagem o usuário era enviado para
+  // /login achando que havia criado uma conta nova.
+  if (
+    data.user &&
+    Array.isArray(data.user.identities) &&
+    data.user.identities.length === 0
+  ) {
+    return { error: EMAIL_ALREADY_EXISTS_PASSWORD }
+  }
+
   redirect(data.session ? '/onboarding' : '/login')
 }
 
