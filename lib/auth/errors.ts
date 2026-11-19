@@ -28,6 +28,9 @@ export const EMAIL_ALREADY_EXISTS_GOOGLE =
 export const EMAIL_ALREADY_EXISTS_PASSWORD =
   'Já existe uma conta com este email. Tente entrar.'
 
+export const PRINCIPAL_CANNOT_DELETE_ACCOUNT =
+  'Você é o gestor de uma escola. Transfira a gestão ou exclua a escola antes de excluir sua conta.'
+
 export function friendlyAuthError(error: AuthError): string {
   if (error.code && AUTH_ERROR_MESSAGES[error.code]) {
     return AUTH_ERROR_MESSAGES[error.code]

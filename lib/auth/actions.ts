@@ -10,6 +10,7 @@ import {
   GENERIC_AUTH_ERROR,
   EMAIL_ALREADY_EXISTS_GOOGLE,
   EMAIL_ALREADY_EXISTS_PASSWORD,
+  PRINCIPAL_CANNOT_DELETE_ACCOUNT,
 } from '@/lib/auth/errors'
 import { headers } from 'next/headers'
 import {
@@ -187,6 +188,130 @@ export async function resetPassword(
   }
 
   redirect('/dashboard')
+}
+
+export type AccountDeletionStatus = {
+  email: string
+  isPrincipal: boolean
+  /** Escolas em que o usuário é gestor; vazio quando não é principal. */
+  principalSchools: string[]
+}
+
+/**
+ * Dados necessários para renderizar (e bloquear) a exclusão de conta.
+ * A checagem de gestão usa o admin client porque a RLS de memberships só
+ * expõe a escola ativa; sem isso, um gestor de escola não-ativa veria o botão
+ * de exclusão indevidamente.
+ */
+export async function getAccountDeletionStatus(): Promise<AccountDeletionStatus | null> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) return null
+
+  const email = user.email ?? ''
+
+  const query = hasAdminKey()
+    ? createAdminClient()
+    : supabase
+
+  const { data: memberships } = await query
+    .from('memberships')
+    .select('role, schools(name)')
+    .eq('user_id', user.id)
+
+  const principalSchools = (memberships ?? [])
+    .filter((membership) => membership.role === 'principal')
+    .map((membership) => {
+      const school = (
+        Array.isArray(membership.schools)
+          ? membership.schools[0]
+          : membership.schools
+      ) as { name: string } | null
+
+      return school?.name ?? ''
+    })
+    .filter(Boolean)
+
+  return {
+    email,
+    isPrincipal: principalSchools.length > 0,
+    principalSchools,
+  }
+}
+
+export type DeleteAccountState = { error: string } | null
+
+/**
+ * Exclui permanentemente a conta do usuário autenticado.
+ *
+ * Regras:
+ *  - O email digitado na confirmação precisa bater com o email da conta.
+ *  - Um principal de qualquer escola é bloqueado: a escola não pode ficar sem
+ *    gestor. Ele deve transferir a gestão ou excluir a escola antes.
+ *  - A exclusão em si usa o admin client (service role), pois remover um
+ *    auth.user exige privilégio administrativo. A cascata do banco limpa
+ *    users, memberships, bookings e zera invitations.invited_by.
+ */
+export async function deleteAccount(
+  _prevState: DeleteAccountState,
+  formData: FormData
+): Promise<DeleteAccountState> {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    redirect('/login')
+  }
+
+  const confirmEmail = formData.get('confirmEmail')
+  if (
+    typeof confirmEmail !== 'string' ||
+    confirmEmail.trim().toLowerCase() !== user.email?.toLowerCase()
+  ) {
+    return { error: 'O email digitado não confere com o da sua conta.' }
+  }
+
+  if (!hasAdminKey()) {
+    return {
+      error:
+        'Não foi possível excluir a conta agora. Tente novamente mais tarde.',
+    }
+  }
+
+  const admin = createAdminClient()
+
+  // Bloqueia se o usuário for principal de QUALQUER escola, não apenas da
+  // ativa: nenhuma escola pode ficar sem gestor. A consulta usa o admin client
+  // porque a policy de RLS de memberships só expõe vínculos da escola ativa —
+  // com o client do usuário, uma gestão em escola não-ativa passaria batido.
+  const { data: memberships, error: membershipsError } = await admin
+    .from('memberships')
+    .select('role')
+    .eq('user_id', user.id)
+
+  if (membershipsError) {
+    console.error('[deleteAccount] memberships lookup failed:', membershipsError)
+    return { error: GENERIC_AUTH_ERROR }
+  }
+
+  if (memberships?.some((membership) => membership.role === 'principal')) {
+    return { error: PRINCIPAL_CANNOT_DELETE_ACCOUNT }
+  }
+
+  const { error } = await admin.auth.admin.deleteUser(user.id)
+
+  if (error) {
+    console.error('[deleteAccount] admin.deleteUser failed:', error)
+    return { error: GENERIC_AUTH_ERROR }
+  }
+
+  await supabase.auth.signOut()
+  redirect('/login')
 }
 
 export async function createSchool(
