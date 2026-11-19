@@ -52,6 +52,8 @@ const ONBOARDING_ERROR_MESSAGES: Record<string, string> = {
   not_active_school:     'Esta não é a sua escola ativa.',
   no_active_school:      'Você não tem uma escola ativa.',
   principal_cannot_leave:'Gestores não podem sair da escola. Exclua a escola ou transfira a gestão.',
+  cannot_transfer_to_self:'Você já é o gestor desta escola.',
+  already_principal:     'Este membro já é gestor desta escola.',
 }
 
 export function friendlyOnboardingError(message: string): string {
