@@ -90,15 +90,7 @@ export function LoginForm({
           )}
         </div>
         <div className="grid gap-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">{t.common.password}</Label>
-            <Link
-              href="/forgot-password"
-              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-            >
-              {t.auth.login.forgotPassword}
-            </Link>
-          </div>
+          <Label htmlFor="password">{t.common.password}</Label>
           <PasswordInput
             id="password"
             autoComplete="current-password"
@@ -108,6 +100,14 @@ export function LoginForm({
           {errors.password && (
             <p className="text-xs text-destructive">{errors.password.message}</p>
           )}
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              {t.auth.login.forgotPassword}
+            </Link>
+          </div>
         </div>
         <Button type="submit" disabled={isPending}>
           {isPending ? t.auth.login.signingIn : t.auth.login.signIn}
