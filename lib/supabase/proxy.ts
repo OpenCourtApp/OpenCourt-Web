@@ -15,8 +15,23 @@ const PUBLIC_PATHS = [
 // redirect automático para /dashboard.
 const AUTH_FLOW_PATHS = ['/auth/callback', '/reset-password']
 
+// Páginas acessíveis mesmo sem escola ativa. `/account/delete-confirmation` é
+// o destino após um principal excluir a própria escola: ali ele pode excluir a
+// conta ou seguir para o onboarding.
+const NO_ONBOARDING_PATHS = [
+  '/onboarding',
+  '/welcome',
+  '/account/delete-confirmation',
+]
+
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
+    (path) => pathname === path || pathname.startsWith(`${path}/`)
+  )
+}
+
+function isNoOnboardingPath(pathname: string): boolean {
+  return NO_ONBOARDING_PATHS.some(
     (path) => pathname === path || pathname.startsWith(`${path}/`)
   )
 }
@@ -90,11 +105,11 @@ export async function updateSession(
   const isOnboarded = Boolean(user.user_metadata?.active_school_id)
 
   if (!isOnboarded) {
-    // Allow /onboarding and /welcome (accepting a first invite)
-    if (pathname === '/onboarding' || pathname === '/welcome') {
-      return supabaseResponse
-    }
-    return redirectTo('/onboarding')
+    // Allow /onboarding, /welcome (accepting a first invite) and the account
+    // deletion confirmation reached after a principal deletes their school.
+    return isNoOnboardingPath(pathname)
+      ? supabaseResponse
+      : redirectTo('/onboarding')
   }
 
   // Fully onboarded users still reach these intentionally from the in-app

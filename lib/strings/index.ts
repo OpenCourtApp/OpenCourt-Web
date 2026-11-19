@@ -309,6 +309,8 @@ export const t = {
     },
     dangerZone: {
       title:              'Zona de perigo',
+      description:        'Ações irreversíveis para esta escola e para a sua conta.',
+      accountTitle:       'Excluir conta',
       deleteDescription:  'Excluir a escola remove permanentemente quadras, reservas, convites e o acesso de todos os membros.',
       deleteButton:       'Excluir escola',
       deleteTitle:        (name: string) => `Excluir ${name}?`,
@@ -359,6 +361,15 @@ export const t = {
       deleteConfirmLabel:  (email: string) => `Digite seu email (${email}) para confirmar`,
       deleteConfirm:       'Excluir conta',
       deleting:            'Excluindo…',
+      confirmation: {
+        title:        'Excluir sua conta',
+        description:  'Sua escola foi excluída. Você pode excluir sua conta agora ou continuar sem escola.',
+        body:         (email: string) =>
+          `A conta ${email} será removida permanentemente, junto com seu perfil e suas reservas.`,
+        delete:       'Excluir minha conta',
+        keep:         'Agora não, ir para o onboarding',
+        goToSettings: 'Ir para Configurações',
+      },
     },
   },
 

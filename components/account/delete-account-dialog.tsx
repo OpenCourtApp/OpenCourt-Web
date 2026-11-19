@@ -1,23 +1,14 @@
 'use client'
 
-import { useActionState, useEffect, useState } from 'react'
+import { useActionState, useState } from 'react'
 import {
   deleteAccount,
-  getAccountDeletionStatus,
   type DeleteAccountState,
 } from '@/lib/auth/actions'
 import { t } from '@/lib/strings'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
-import { Skeleton } from '@/components/ui/skeleton'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -29,72 +20,17 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 
-export function AccountDangerZone() {
-  const [loading, setLoading] = useState(true)
-  const [email, setEmail] = useState('')
-  const [isPrincipal, setIsPrincipal] = useState(false)
-  const [principalSchools, setPrincipalSchools] = useState<string[]>([])
-
-  useEffect(() => {
-    let active = true
-
-    getAccountDeletionStatus().then((status) => {
-      if (!active) return
-
-      if (status) {
-        setEmail(status.email)
-        setIsPrincipal(status.isPrincipal)
-        setPrincipalSchools(status.principalSchools)
-      }
-      setLoading(false)
-    })
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  if (loading) {
-    return (
-      <Card className="border-destructive/30">
-        <CardHeader>
-          <CardTitle className="text-destructive">
-            {t.settings.account.title}
-          </CardTitle>
-          <CardDescription>{t.settings.account.description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-9 w-40" />
-        </CardContent>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="border-destructive/30">
-      <CardHeader>
-        <CardTitle className="text-destructive">
-          {t.settings.account.title}
-        </CardTitle>
-        <CardDescription>{t.settings.account.description}</CardDescription>
-      </CardHeader>
-      <CardContent>
-        {isPrincipal ? (
-          <div className="space-y-1 text-sm text-muted-foreground">
-            <p>{t.settings.account.principalBlocked}</p>
-            {principalSchools.length > 0 && (
-              <p>{t.settings.account.principalSchools(principalSchools.join(', '))}</p>
-            )}
-          </div>
-        ) : (
-          <DeleteAccountDialog email={email} />
-        )}
-      </CardContent>
-    </Card>
-  )
-}
-
-function DeleteAccountDialog({ email }: { email: string }) {
+export function DeleteAccountDialog({
+  email,
+  triggerLabel,
+  triggerVariant = 'destructive',
+  triggerClassName,
+}: {
+  email: string
+  triggerLabel?: string
+  triggerVariant?: React.ComponentProps<typeof Button>['variant']
+  triggerClassName?: string
+}) {
   const [open, setOpen] = useState(false)
   const [confirmText, setConfirmText] = useState('')
   const [state, formAction, isPending] = useActionState<
@@ -113,8 +49,8 @@ function DeleteAccountDialog({ email }: { email: string }) {
   return (
     <AlertDialog open={open} onOpenChange={handleOpenChange}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive">
-          {t.settings.account.deleteButton}
+        <Button variant={triggerVariant} className={triggerClassName}>
+          {triggerLabel ?? t.settings.account.deleteButton}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>

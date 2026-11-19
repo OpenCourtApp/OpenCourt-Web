@@ -10,7 +10,7 @@ import { AuthorizationPanel } from '@/components/settings/AuthorizationPanel'
 import { CourtsPanel } from '@/components/settings/CourtsPanel'
 import { NotificationsPanel } from '@/components/settings/NotificationsPanel'
 import { AppearancePanel } from '@/components/settings/AppearancePanel'
-import { AccountDangerZone } from '@/components/settings/AccountDangerZone'
+import { DangerZoneSection } from '@/components/settings/DangerZoneSection'
 import {
   RiUserLine,
   RiSchoolLine,
@@ -130,7 +130,7 @@ export default function SettingsPage() {
         <section id="courts"        className="scroll-mt-4"><CourtsPanel /></section>
         <section id="notifications" className="scroll-mt-4"><NotificationsPanel /></section>
         <section id="appearance"    className="scroll-mt-4"><AppearancePanel /></section>
-        <section id="account"       className="scroll-mt-4"><AccountDangerZone /></section>
+        <section id="account"       className="scroll-mt-4"><DangerZoneSection /></section>
       </main>
     </div>
   )

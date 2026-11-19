@@ -47,7 +47,10 @@ export async function deleteSchool(
   const hasNextSchool = Boolean(
     refreshed.session?.user.user_metadata?.active_school_id
   )
-  redirect(hasNextSchool ? '/dashboard' : '/onboarding')
+  // Sem próxima escola: o principal acabou de excluir a única escola dele.
+  // O onboarding não oferece exclusão de conta, então oferecemos a rota
+  // dedicada — lá ele decide entre excluir a conta ou seguir para o onboarding.
+  redirect(hasNextSchool ? '/dashboard' : '/account/delete-confirmation')
 }
 
 export async function leaveSchool(
