@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { DangerZone } from '@/components/settings/DangerZone'
+import { TransferOwnershipCard } from '@/components/settings/TransferOwnershipCard'
 import { ROLE_LABELS, t } from '@/lib/strings'
 
 function RoleBadge({ role }: { role: Role }) {
@@ -127,6 +128,12 @@ export function InstitutionsPanel() {
           )}
         </CardContent>
       </Card>
+
+      {activeSchool && activeSchool.role === 'principal' && (
+        <TransferOwnershipCard
+          school={{ id: activeSchool.school_id, name: activeSchool.school_name }}
+        />
+      )}
 
       {activeSchool && (
         <DangerZone
