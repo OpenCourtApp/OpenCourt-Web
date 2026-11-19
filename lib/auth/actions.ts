@@ -11,12 +11,16 @@ import {
   EMAIL_ALREADY_EXISTS_GOOGLE,
   EMAIL_ALREADY_EXISTS_PASSWORD,
 } from '@/lib/auth/errors'
+import { headers } from 'next/headers'
 import {
   acceptInvitationSchema,
   createSchoolSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
   signInSchema,
   signUpSchema,
   type CreateSchoolInput,
+  type ForgotPasswordInput,
   type SignInInput,
   type SignUpInput,
 } from '@/lib/auth/validation'
@@ -101,6 +105,89 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
 // Google OAuth is initiated client-side (browser client must own the PKCE
 // verifier + cross-origin redirect) — see components/google-sign-in-button.tsx.
 // The /auth/callback route handles exchangeCodeForSession server-side.
+
+export type ForgotPasswordResult = { success: true } | { error: string }
+
+/**
+ * Envia o e-mail de recuperação de senha pelo Supabase Auth.
+ * Sempre retorna sucesso quando o e-mail é válido, para não revelar se a conta
+ * existe (evita enumeração de e-mails).
+ */
+export async function forgotPassword(
+  input: ForgotPasswordInput
+): Promise<ForgotPasswordResult> {
+  const parsed = forgotPasswordSchema.safeParse(input)
+  if (!parsed.success) {
+    return { error: 'Insira um endereço de email válido.' }
+  }
+
+  const supabase = await createClient()
+  const origin =
+    (await headers()).get('origin') ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    'http://localhost:3000'
+
+  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
+    // O callback troca o token de recuperação por uma sessão e então
+    // redireciona para a página onde o usuário define a nova senha.
+    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  })
+
+  if (error) {
+    return { error: friendlyAuthError(error) }
+  }
+
+  return { success: true }
+}
+
+export type ResetPasswordState = { error: string } | null
+
+/**
+ * Define a nova senha a partir da sessão criada pelo callback de recuperação
+ * (verifyOtp com type=recovery). O usuário chega aqui já autenticado.
+ */
+export async function resetPassword(
+  _prevState: ResetPasswordState,
+  formData: FormData
+): Promise<ResetPasswordState> {
+  const rawPassword = formData.get('password')
+  const rawConfirmPassword = formData.get('confirmPassword')
+
+  const parsed = resetPasswordSchema.safeParse({
+    password: typeof rawPassword === 'string' ? rawPassword : '',
+    confirmPassword:
+      typeof rawConfirmPassword === 'string' ? rawConfirmPassword : '',
+  })
+
+  if (!parsed.success) {
+    return {
+      error:
+        parsed.error.issues[0]?.message ??
+        'Verifique os campos do formulário e tente novamente.',
+    }
+  }
+
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user) {
+    return {
+      error: 'Seu link de recuperação expirou. Solicite um novo e-mail.',
+    }
+  }
+
+  const { error } = await supabase.auth.updateUser({
+    password: parsed.data.password,
+  })
+
+  if (error) {
+    return { error: friendlyAuthError(error) }
+  }
+
+  redirect('/dashboard')
+}
 
 export async function createSchool(
   input: CreateSchoolInput

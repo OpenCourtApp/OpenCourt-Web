@@ -18,7 +18,12 @@ export async function GET(request: NextRequest) {
   const tokenHash = requestUrl.searchParams.get('token_hash')
   const type = requestUrl.searchParams.get('type') as EmailOtpType | null
   const invitationId = requestUrl.searchParams.get('invitation_id')
-  const nextParam = requestUrl.searchParams.get('next') ?? '/dashboard'
+  // Recuperação de senha sempre termina em /reset-password, independentemente
+  // do `next` que vier na URL — o token de recovery não dá acesso ao app.
+  const isRecovery = type === 'recovery'
+  const nextParam = isRecovery
+    ? '/reset-password'
+    : requestUrl.searchParams.get('next') ?? '/dashboard'
   // Only allow relative paths to prevent open redirects
   const next = nextParam.startsWith('/') ? nextParam : '/dashboard'
 

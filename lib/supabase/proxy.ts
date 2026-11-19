@@ -1,7 +1,19 @@
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
 
-const PUBLIC_PATHS = ['/login', '/register', '/auth/callback', '/api/ping']
+const PUBLIC_PATHS = [
+  '/login',
+  '/register',
+  '/forgot-password',
+  '/reset-password',
+  '/auth/callback',
+  '/api/ping',
+]
+
+// Páginas de auth que também devem ser acessíveis quando já há sessão
+// (ex.: a sessão temporária de recovery criada pelo callback), sem o
+// redirect automático para /dashboard.
+const AUTH_FLOW_PATHS = ['/auth/callback', '/reset-password']
 
 function isPublicPath(pathname: string): boolean {
   return PUBLIC_PATHS.some(
@@ -62,6 +74,16 @@ export async function updateSession(
 
   // OAuth callback must always complete with a session present
   if (pathname.startsWith('/auth/callback')) {
+    return supabaseResponse
+  }
+
+  // Recovery flow pages must remain reachable with the temporary session
+  // created by the callback — do not bounce them to /dashboard or /onboarding.
+  if (
+    AUTH_FLOW_PATHS.some(
+      (path) => pathname === path || pathname.startsWith(`${path}/`)
+    )
+  ) {
     return supabaseResponse
   }
 
