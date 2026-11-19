@@ -241,6 +241,14 @@ export async function forgotPassword(
   })
 
   if (error) {
+    // Loga o código real no servidor: sem isso, um erro fora do mapa de
+    // mensagens amigáveis vira um "algo deu errado" impossível de diagnosticar.
+    console.error(
+      '[forgotPassword] supabase auth error:',
+      error.code ?? '(sem código)',
+      error.status,
+      error.message
+    )
     return { error: friendlyAuthError(error) }
   }
 

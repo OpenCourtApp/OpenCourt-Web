@@ -83,6 +83,7 @@ export const t = {
       submit:       'Enviar link de recuperação',
       sending:      'Enviando...',
       sent:         'Se este email estiver cadastrado, você receberá um link de recuperação em instantes.',
+      failed:       'Não foi possível enviar o email agora. Tente novamente em instantes.',
       backToLogin:  'Voltar para o login',
     },
     resetPassword: {

@@ -38,11 +38,18 @@ export function ForgotPasswordForm({ ...props }: React.ComponentProps<typeof Car
   const onSubmit = handleSubmit((values) => {
     setServerError('')
     startTransition(async () => {
-      const result = await forgotPassword(values)
-      if ('error' in result) {
-        setServerError(result.error)
-      } else {
-        setSent(true)
+      try {
+        const result = await forgotPassword(values)
+        if ('error' in result) {
+          setServerError(result.error)
+        } else {
+          setSent(true)
+        }
+      } catch {
+        // A Server Action pode falhar antes de responder (deploy novo, rede,
+        // sessão expirada). Sem isto a rejeição sobe como erro não tratado no
+        // console e o usuário fica sem feedback.
+        setServerError(t.auth.forgotPassword.failed)
       }
     })
   })

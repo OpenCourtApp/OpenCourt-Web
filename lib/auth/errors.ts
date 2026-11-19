@@ -14,11 +14,30 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   email_exists:
     'Já existe uma conta com este email. Tente entrar.',
   weak_password: 'A senha é muito fraca. Use pelo menos 6 caracteres.',
-  over_request_rate_limit: 'Muitas tentativas. Aguarde um momento e tente novamente.',
+  over_request_rate_limit:
+    'Muitas tentativas. Aguarde alguns minutos e tente novamente.',
   user_banned: 'Esta conta foi desativada. Fale com o gestor.',
   provider_disabled:
     'O login com o Google não está habilitado. Fale com o administrador.',
+  email_address_invalid: 'Insira um endereço de email válido.',
+  email_address_not_authorized:
+    'Não foi possível enviar o email para este endereço. Fale com o suporte.',
+  same_password:
+    'A nova senha precisa ser diferente da senha atual.',
+  session_not_found: 'Sua sessão expirou. Solicite um novo link.',
+  session_expired: 'Sua sessão expirou. Solicite um novo link.',
+  reauthentication_needed: 'Confirme sua identidade para continuar.',
+  otp_expired: 'Este link expirou. Solicite um novo.',
 }
+
+// `over_email_send_rate_limit` cobre duas situações diferentes no Supabase:
+// o limite do projeto (2 emails por hora no provedor padrão) e a janela de
+// 60 segundos por endereço. Só a mensagem da API distingue as duas.
+export const EMAIL_PROJECT_RATE_LIMIT =
+  'O limite de envio de emails do serviço foi atingido. Aguarde cerca de uma hora e tente novamente.'
+
+export const EMAIL_USER_RATE_LIMIT =
+  'Aguarde cerca de um minuto antes de solicitar outro email.'
 
 // Mensagens específicas para quando o email já está cadastrado, diferenciando
 // se a conta existente é do Google ou de email/senha.
@@ -32,6 +51,19 @@ export const PRINCIPAL_CANNOT_DELETE_ACCOUNT =
   'Você é o gestor de uma escola. Transfira a gestão ou exclua a escola antes de excluir sua conta.'
 
 export function friendlyAuthError(error: AuthError): string {
+  if (error.code === 'over_email_send_rate_limit') {
+    // A mensagem do GoTrue para a janela por endereço começa com
+    // "For security purposes, you can only request this after N seconds".
+    return /security purposes/i.test(error.message)
+      ? EMAIL_USER_RATE_LIMIT
+      : EMAIL_PROJECT_RATE_LIMIT
+  }
+
+  // 429 sem código reconhecível também é limite de requisições.
+  if (error.status === 429) {
+    return AUTH_ERROR_MESSAGES.over_request_rate_limit
+  }
+
   if (error.code && AUTH_ERROR_MESSAGES[error.code]) {
     return AUTH_ERROR_MESSAGES[error.code]
   }
