@@ -90,7 +90,15 @@ export function LoginForm({
           )}
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="password">{t.common.password}</Label>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">{t.common.password}</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              {t.auth.login.forgotPassword}
+            </Link>
+          </div>
           <PasswordInput
             id="password"
             autoComplete="current-password"
