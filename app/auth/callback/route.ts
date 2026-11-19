@@ -2,6 +2,21 @@ import { NextResponse, type NextRequest } from 'next/server'
 import type { EmailOtpType } from '@supabase/supabase-js'
 import { createClient } from '@/lib/supabase/server'
 
+// Ponte para o fluxo de recuperação em implicit flow. Os tokens chegam no
+// fragmento da URL, que só o browser consegue ler — este HTML repassa o hash
+// intacto para /reset-password em vez de perder o token num redirect HTTP.
+const RECOVERY_BRIDGE_HTML = `<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>Redefinir senha</title>
+  </head>
+  <body>
+    <script>location.replace('/reset-password' + location.hash)</script>
+  </body>
+</html>`
+
 // Completes authentication for BOTH entry points, which arrive with different
 // params:
 //  • Google OAuth (and any PKCE flow started in this same browser) → `?code=`.
@@ -20,10 +35,11 @@ export async function GET(request: NextRequest) {
   const invitationId = requestUrl.searchParams.get('invitation_id')
   // Recuperação de senha sempre termina em /reset-password, independentemente
   // do `next` que vier na URL — o token de recovery não dá acesso ao app.
-  const isRecovery = type === 'recovery'
-  const nextParam = isRecovery
-    ? '/reset-password'
-    : requestUrl.searchParams.get('next') ?? '/dashboard'
+  // No implicit flow o `type` não vem no query (fica no fragmento da URL),
+  // então também reconhecemos pelo `next` que nós mesmos enviamos.
+  const requestedNext = requestUrl.searchParams.get('next')
+  const isRecovery = type === 'recovery' || requestedNext === '/reset-password'
+  const nextParam = isRecovery ? '/reset-password' : requestedNext ?? '/dashboard'
   // Only allow relative paths to prevent open redirects
   const next = nextParam.startsWith('/') ? nextParam : '/dashboard'
 
@@ -72,6 +88,20 @@ export async function GET(request: NextRequest) {
   if (result && !result.error) {
     const response = NextResponse.redirect(new URL(next, requestUrl.origin))
     return response
+  }
+
+  // Recuperação de senha em implicit flow: o GoTrue devolve os tokens no
+  // FRAGMENTO da URL (#access_token=...), que nunca chega ao servidor. Em vez
+  // de falhar para /login?error=oauth_failed, devolvemos um HTML que repassa o
+  // fragmento para /reset-password, onde o client monta a sessão.
+  if (isRecovery) {
+    return new NextResponse(RECOVERY_BRIDGE_HTML, {
+      status: 200,
+      headers: {
+        'content-type': 'text/html; charset=utf-8',
+        'cache-control': 'no-store',
+      },
+    })
   }
 
   return NextResponse.redirect(new URL('/login?error=oauth_failed', requestUrl.origin))

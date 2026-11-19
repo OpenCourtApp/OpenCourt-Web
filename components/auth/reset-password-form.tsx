@@ -11,7 +11,7 @@ import {
   type ResetPasswordInput,
 } from '@/lib/auth/validation'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
+import { PasswordInput } from '@/components/ui/password-input'
 import { Label } from '@/components/ui/label'
 import {
   Card,
@@ -55,9 +55,8 @@ export function ResetPasswordForm({ ...props }: React.ComponentProps<typeof Card
 
           <div className="grid gap-2">
             <Label htmlFor="reset-password">{t.common.password}</Label>
-            <Input
+            <PasswordInput
               id="reset-password"
-              type="password"
               autoComplete="new-password"
               aria-invalid={!!errors.password}
               aria-describedby="reset-password-hint"
@@ -78,9 +77,8 @@ export function ResetPasswordForm({ ...props }: React.ComponentProps<typeof Card
             <Label htmlFor="reset-confirm-password">
               {t.auth.resetPassword.confirmPassword}
             </Label>
-            <Input
+            <PasswordInput
               id="reset-confirm-password"
-              type="password"
               autoComplete="new-password"
               aria-invalid={!!errors.confirmPassword}
               {...register('confirmPassword')}

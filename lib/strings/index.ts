@@ -88,6 +88,10 @@ export const t = {
     resetPassword: {
       title:           'Defina uma nova senha',
       subtitle:        'Escolha uma nova senha para sua conta.',
+      checking:        'Validando seu link de recuperação…',
+      invalidTitle:    'Link inválido ou expirado',
+      invalidBody:     'Esse link de recuperação já foi usado ou passou do prazo. Solicite um novo para redefinir sua senha.',
+      requestNew:      'Solicitar novo link',
       confirmPassword: 'Confirmar senha',
       submit:          'Salvar nova senha',
       saving:          'Salvando...',
