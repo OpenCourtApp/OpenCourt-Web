@@ -20,6 +20,14 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
     'O login com o Google não está habilitado. Fale com o administrador.',
 }
 
+// Mensagens específicas para quando o email já está cadastrado, diferenciando
+// se a conta existente é do Google ou de email/senha.
+export const EMAIL_ALREADY_EXISTS_GOOGLE =
+  'Este email já está cadastrado com o Google. Entre com o Google.'
+
+export const EMAIL_ALREADY_EXISTS_PASSWORD =
+  'Já existe uma conta com este email. Tente entrar.'
+
 export function friendlyAuthError(error: AuthError): string {
   if (error.code && AUTH_ERROR_MESSAGES[error.code]) {
     return AUTH_ERROR_MESSAGES[error.code]

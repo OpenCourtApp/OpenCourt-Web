@@ -3,10 +3,13 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient, hasAdminKey } from '@/lib/supabase/admin'
 import {
   friendlyAuthError,
   friendlyOnboardingError,
   GENERIC_AUTH_ERROR,
+  EMAIL_ALREADY_EXISTS_GOOGLE,
+  EMAIL_ALREADY_EXISTS_PASSWORD,
 } from '@/lib/auth/errors'
 import {
   acceptInvitationSchema,
@@ -46,6 +49,38 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
   if (!parsed.success) return INVALID_INPUT
 
   const { email, password, fullName } = parsed.data
+
+  // Verifica proativamente se o email já está cadastrado no Supabase Auth,
+  // para dar um erro claro e diferenciado (Google vs email/senha) antes de
+  // tentar criar a conta — evitando que o usuário pense que cadastrou quando
+  // na verdade o email já existe (ex: conta criada pelo Google).
+  if (hasAdminKey()) {
+    const admin = createAdminClient()
+    let page = 1
+    let usersData: { users: Array<{ email?: string | null; app_metadata?: Record<string, unknown> | null }> } | null = null
+
+    // Percorre as páginas de usuários procurando pelo email. O SDK instalado
+    // não suporta filtro por email em listUsers(), então filtramos localmente.
+    do {
+      const { data, error: listError } = await admin.auth.admin.listUsers({
+        page,
+        perPage: 100,
+      })
+      if (listError || !data?.users) break
+      usersData = data
+      const found = usersData.users.find(
+        (u) => u.email?.toLowerCase() === email.toLowerCase()
+      )
+      if (found) {
+        const isGoogle = found.app_metadata?.provider === 'google'
+        return {
+          error: isGoogle ? EMAIL_ALREADY_EXISTS_GOOGLE : EMAIL_ALREADY_EXISTS_PASSWORD,
+        }
+      }
+      page++
+    } while (usersData?.users?.length === 100)
+  }
+
   const supabase = await createClient()
 
   const { data, error } = await supabase.auth.signUp({
