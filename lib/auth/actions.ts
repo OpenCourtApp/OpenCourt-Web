@@ -267,24 +267,10 @@ export async function sendResetOtp(
  * redefine a senha do usuário. Após a redefinição, encerra a sessão para
  * não deixar o usuário autenticado com um token de uso único.
  */
-export type ResetPasswordWithOtpState = { error: string } | null
-
 export async function resetPasswordWithOtp(
-  _prevState: ResetPasswordWithOtpState,
-  formData: FormData
-): Promise<ResetPasswordWithOtpState> {
-  const rawEmail = formData.get('email')
-  const rawCode = formData.get('code')
-  const rawPassword = formData.get('password')
-  const rawConfirmPassword = formData.get('confirmPassword')
-
-  const parsed = resetPasswordWithOtpSchema.safeParse({
-    email: typeof rawEmail === 'string' ? rawEmail : '',
-    code: typeof rawCode === 'string' ? rawCode : '',
-    password: typeof rawPassword === 'string' ? rawPassword : '',
-    confirmPassword:
-      typeof rawConfirmPassword === 'string' ? rawConfirmPassword : '',
-  })
+  input: ResetPasswordWithOtpInput
+): Promise<AuthActionResult> {
+  const parsed = resetPasswordWithOtpSchema.safeParse(input)
 
   if (!parsed.success) {
     return {
@@ -311,9 +297,19 @@ export async function resetPasswordWithOtp(
       '[resetPasswordWithOtp] verifyOtp error:',
       otpError.code ?? '(sem código)',
       otpError.status,
-      otpError.message
+      otpError.message,
+      { email: parsed.data.email, codeLength: parsed.data.code.length }
     )
-    return { error: 'Código inválido ou expirado. Solicite um novo.' }
+    // Em desenvolvimento o erro cru do Supabase aparece junto da mensagem
+    // amigável, para não precisar caçar o log do servidor.
+    const detail =
+      process.env.NODE_ENV === 'production'
+        ? ''
+        : ` [dev: ${otpError.status ?? '?'} ${otpError.code ?? otpError.message}]`
+
+    return {
+      error: `Código inválido ou expirado. Cada código pode ser usado apenas uma vez.${detail}`,
+    }
   }
 
   // 2. Redefine a senha enquanto a sessão temporária está ativa.

@@ -1,6 +1,6 @@
 'use client'
 
-import { useActionState, useState } from 'react'
+import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,10 +27,7 @@ export function VerifyOtpForm({
   ...props
 }: React.ComponentProps<typeof Card> & { defaultEmail?: string }) {
   const [serverError, setServerError] = useState('')
-  const [state, formAction, isPending] = useActionState(
-    resetPasswordWithOtp,
-    null
-  )
+  const [isPending, startTransition] = useTransition()
 
   const {
     register,
@@ -49,9 +46,13 @@ export function VerifyOtpForm({
 
   const onSubmit = handleSubmit((values) => {
     setServerError('')
-    // useActionState já chama o action com o FormData; aqui apenas disparamos
-    // o submit do form pelo React Hook Form para aproveitar a validação Zod.
-    // O action recebe o FormData do próprio <form action={formAction}>.
+    startTransition(async () => {
+      // Em caso de sucesso a action redireciona para /login.
+      const result = await resetPasswordWithOtp(values)
+      if (result?.error) {
+        setServerError(result.error)
+      }
+    })
   })
 
   return (
@@ -69,15 +70,7 @@ export function VerifyOtpForm({
             {serverError}
           </div>
         )}
-        {state?.error && (
-          <div
-            role="alert"
-            className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-          >
-            {state.error}
-          </div>
-        )}
-        <form action={formAction} noValidate className="grid gap-4">
+        <form onSubmit={onSubmit} noValidate className="grid gap-4">
           <input type="hidden" {...register('email')} />
 
           <div className="grid gap-2">
@@ -88,7 +81,7 @@ export function VerifyOtpForm({
               inputMode="numeric"
               maxLength={OTP_CODE_LENGTH}
               placeholder="12345678"
-              autoComplete="otp"
+              autoComplete="one-time-code"
               aria-invalid={!!errors.code}
               {...register('code')}
             />
