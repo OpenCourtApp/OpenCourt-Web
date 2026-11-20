@@ -368,6 +368,7 @@ export const t = {
       title:               'Conta',
       description:         'Ações permanentes e irreversíveis relacionadas à sua conta.',
       principalBlocked:    'Você é o gestor de uma escola. Transfira a gestão ou exclua a escola antes de excluir sua conta.',
+      deleteNotAllowed:    'Apenas o diretor pode excluir contas. Entre em contato com a gestão da sua escola.',
       principalSchools:    (names: string) => `Escolas em que você é gestor: ${names}.`,
       deleteButton:        'Excluir minha conta',
       deleteTitle:         'Excluir sua conta?',

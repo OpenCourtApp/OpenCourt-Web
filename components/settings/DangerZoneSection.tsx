@@ -18,7 +18,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { DeleteSchoolDialog } from '@/components/settings/DeleteSchoolDialog'
 import { LeaveSchoolDialog } from '@/components/settings/LeaveSchoolDialog'
-import { DeleteAccountDialog } from '@/components/account/delete-account-dialog'
 
 type ActiveSchool = {
   id: string
@@ -162,12 +161,9 @@ export function DangerZoneSection() {
                 )}
               </div>
             ) : (
-              <>
-                <p className="text-sm text-muted-foreground">
-                  {t.settings.account.description}
-                </p>
-                <DeleteAccountDialog email={status.email} />
-              </>
+              <div className="space-y-1 text-sm text-muted-foreground">
+                <p>{t.settings.account.deleteNotAllowed}</p>
+              </div>
             )}
           </div>
         )}

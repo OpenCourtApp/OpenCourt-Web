@@ -13,6 +13,7 @@ import {
   EMAIL_ALREADY_EXISTS_PASSWORD,
   PRINCIPAL_CANNOT_DELETE_ACCOUNT,
 } from '@/lib/auth/errors'
+import { t } from '@/lib/strings'
 import {
   acceptInvitationSchema,
   createSchoolSchema,
@@ -348,6 +349,12 @@ export async function deleteAccount(
 
   if (!user) {
     redirect('/login')
+  }
+
+  // Apenas o diretor (principal) pode excluir contas. Professores e
+  // representantes devem solicitar a exclusão ao diretor da escola.
+  if (user.role !== 'principal') {
+    return { error: t.settings.account.deleteNotAllowed }
   }
 
   const confirmEmail = formData.get('confirmEmail')
