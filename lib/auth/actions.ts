@@ -297,15 +297,23 @@ export async function resetPasswordWithOtp(
 
   const supabase = await createClient()
 
-  // 1. Valida o código OTP recebido por email. Isso cria uma sessão
-  // temporária no cookie do navegador.
+  // 1. Valida o código OTP recebido por email. O valor do {{ .Token }} no
+  // template é o OTP numérico ("token"), não o hash do link ("token_hash"),
+  // então usamos o parâmetro `token`. Isso cria uma sessão temporária no
+  // cookie do navegador.
   const { error: otpError } = await supabase.auth.verifyOtp({
     email: parsed.data.email,
-    token_hash: parsed.data.code,
+    token: parsed.data.code,
     type: 'recovery',
   })
 
   if (otpError) {
+    console.error(
+      '[resetPasswordWithOtp] verifyOtp error:',
+      otpError.code ?? '(sem código)',
+      otpError.status,
+      otpError.message
+    )
     return { error: 'Código inválido ou expirado. Solicite um novo.' }
   }
 
