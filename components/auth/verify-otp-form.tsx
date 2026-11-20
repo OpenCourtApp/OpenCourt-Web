@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { resetPasswordWithOtp } from '@/lib/auth/actions'
 import {
+  OTP_CODE_LENGTH,
   resetPasswordWithOtpSchema,
   type ResetPasswordWithOtpInput,
 } from '@/lib/auth/validation'
@@ -84,7 +85,8 @@ export function VerifyOtpForm({
             <Input
               id="otp-code"
               type="text"
-              maxLength={10}
+              inputMode="numeric"
+              maxLength={OTP_CODE_LENGTH}
               placeholder="12345678"
               autoComplete="otp"
               aria-invalid={!!errors.code}

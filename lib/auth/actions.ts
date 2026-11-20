@@ -20,7 +20,6 @@ import {
   resetPasswordWithOtpSchema,
   signInSchema,
   signUpSchema,
-  verifyOtpSchema,
   type CreateSchoolInput,
   type ForgotPasswordInput,
   type ResetPasswordWithOtpInput,

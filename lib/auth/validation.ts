@@ -45,14 +45,20 @@ export const forgotPasswordSchema = z.object({
   email,
 })
 
-export const verifyOtpSchema = z.object({
-  email,
-  code: z.string().regex(/^\d+$/, 'Informe apenas dígitos numéricos.').min(1, 'Informe o código de recuperação.'),
-})
+// O Supabase envia o código de recuperação com a quantidade de dígitos
+// configurada no projeto (8 no nosso caso). O valor é compartilhado com o
+// formulário para limitar o campo ao mesmo tamanho.
+export const OTP_CODE_LENGTH = 8
+
+const otpCode = z
+  .string()
+  .min(1, 'Informe o código de recuperação.')
+  .regex(/^\d+$/, 'Informe apenas dígitos numéricos.')
+  .length(OTP_CODE_LENGTH, `O código deve ter ${OTP_CODE_LENGTH} dígitos.`)
 
 export const resetPasswordWithOtpSchema = z.object({
   email,
-  code: z.string().regex(/^\d+$/, 'Informe apenas dígitos numéricos.').min(1, 'Informe o código de recuperação.'),
+  code: otpCode,
   password,
   confirmPassword: z.string().min(1, 'Confirme sua nova senha.'),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -87,5 +93,4 @@ export type CreateSchoolInput      = z.infer<typeof createSchoolSchema>
 export type AcceptInvitationInput  = z.infer<typeof acceptInvitationSchema>
 export type InviteMemberInput      = z.infer<typeof inviteMemberSchema>
 export type ForgotPasswordInput    = z.infer<typeof forgotPasswordSchema>
-export type VerifyOtpInput         = z.infer<typeof verifyOtpSchema>
 export type ResetPasswordWithOtpInput = z.infer<typeof resetPasswordWithOtpSchema>
