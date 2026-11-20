@@ -54,6 +54,7 @@ export function VerifyOtpForm({
             email: values.email,
             code: values.code,
             password: values.password,
+            confirmPassword: values.confirmPassword,
           }),
         })
 
