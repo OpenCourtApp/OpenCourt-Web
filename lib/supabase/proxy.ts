@@ -9,6 +9,8 @@ const PUBLIC_PATHS = [
   '/auth/callback',
   '/api/ping',
   '/api/test-recovery',
+  '/api/test-verify-otp',
+  '/api/test-verify-direct',
 ]
 
 // Páginas de auth que também devem ser acessíveis quando já há sessão
