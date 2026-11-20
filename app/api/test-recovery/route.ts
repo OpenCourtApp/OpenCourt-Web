@@ -41,20 +41,39 @@ export async function GET() {
     oneTimeTokens = data
     if (data && Array.isArray(data) && data.length > 0) {
       // O token pode estar em diferentes colunas dependendo da versão do Supabase
-      const row = data[0]
-      otpToken =
-        (row as Record<string, unknown>)['token'] ??
-        (row as Record<string, unknown>)['otp'] ??
-        (row as Record<string, unknown>)['hash'] ??
+      const row = data[0] as Record<string, unknown> | null
+      otpToken = (
+        row?.[
+          'token' as keyof Record<string, unknown>
+        ] ??
+        row?.[
+          'otp' as keyof Record<string, unknown>
+        ] ??
+        row?.[
+          'hash' as keyof Record<string, unknown>
+        ] ??
         null
+      ) as string | null
       results.tokenField = otpToken
       results.oneTimeTokenRow = {
-        id: (row as Record<string, unknown>)['id'],
-        email: (row as Record<string, unknown>)['email'],
-        type: (row as Record<string, unknown>)['type'],
-        used: (row as Record<string, unknown>)['used'],
-        expires_at: (row as Record<string, unknown>)['expires_at'],
-        created_at: (row as Record<string, unknown>)['created_at'],
+        id: row?.[
+          'id' as keyof Record<string, unknown>
+        ],
+        email: row?.[
+          'email' as keyof Record<string, unknown>
+        ],
+        type: row?.[
+          'type' as keyof Record<string, unknown>
+        ],
+        used: row?.[
+          'used' as keyof Record<string, unknown>
+        ],
+        expires_at: row?.[
+          'expires_at' as keyof Record<string, unknown>
+        ],
+        created_at: row?.[
+          'created_at' as keyof Record<string, unknown>
+        ],
       }
     }
   } catch (e) {
@@ -88,9 +107,11 @@ export async function GET() {
 
   // 6. Se gerou token_hash, tenta verifyOtp com token_hash
   let verifyHashResult: unknown = null
-  if (generateLinkResult && !('error' in generateLinkResult) && (generateLinkResult as Record<string, unknown>)['data']) {
-    const linkData = (generateLinkResult as Record<string, unknown>)['data'] as Record<string, unknown>
-    const tokenHash = (linkData as Record<string, unknown>)['properties']?.['action_link'] as string | undefined
+  const glr = generateLinkResult as Record<string, unknown> | null
+  if (glr && !('error' in glr) && glr['data']) {
+    const linkData = glr['data'] as Record<string, unknown>
+    const properties = (linkData['properties'] as Record<string, unknown> | undefined)
+    const tokenHash = properties?.['action_link'] as string | undefined
     // O action_link contém o token_hash como query param
     const hashMatch = tokenHash?.match(/token_hash=([^&]+)/)
     if (hashMatch) {
