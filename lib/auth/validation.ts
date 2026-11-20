@@ -10,7 +10,11 @@ const fullName = z.string().trim().min(2, 'Insira seu nome completo.')
 // Password policy for new password creation (email/password signup, invitee
 // password-set, profile password change). Google users never set a password,
 // so this only ever applies to non-Google flows.
-const PASSWORD_SPECIAL_CHAR = /[!@#$%^&*(),.?":{}|<>]/
+//
+// "Especial" = qualquer pontuação ou símbolo Unicode (categorias P e S), o que
+// cobre !@#$%^&* e também - _ + = ~ / \ ; ' [ ] etc. A lista fechada anterior
+// rejeitava senhas válidas que usavam, por exemplo, "_" ou "-".
+const PASSWORD_SPECIAL_CHAR = /[\p{P}\p{S}]/u
 
 export const PASSWORD_HINT =
   'Pelo menos 6 caracteres, incluindo um caractere especial.'
