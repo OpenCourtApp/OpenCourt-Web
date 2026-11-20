@@ -8,6 +8,7 @@ const PUBLIC_PATHS = [
   '/verify-reset-code',
   '/auth/callback',
   '/api/ping',
+  '/api/test-recovery',
 ]
 
 // Páginas de auth que também devem ser acessíveis quando já há sessão
