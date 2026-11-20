@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient, hasAdminKey } from '@/lib/supabase/admin'
 import {
@@ -223,9 +224,10 @@ export type SendResetOtpResult = { success: true } | { error: string }
 
 /**
  * Envia um código de recuperação por e-mail para recuperação de senha.
- * Usa signInWithOtp do Supabase Auth, que dispara o email com o código.
- * O corpo do email deve conter apenas {{ .Token }} como texto puro (sem link),
- * para que o rastreamento de cliques da Brevo não corrompa o código.
+ * Usa resetPasswordForEmail do Supabase Auth, que dispara o email com o
+ * token de recovery. O corpo do email deve conter apenas {{ .Token }} como
+ * texto puro (sem link), para que o rastreamento de cliques da Brevo não
+ * corrompa o código.
  */
 export async function sendResetOtp(
   input: ForgotPasswordInput
@@ -236,10 +238,17 @@ export async function sendResetOtp(
   }
 
   const supabase = await createClient()
+  const origin =
+    (await headers()).get('origin') ??
+    process.env.NEXT_PUBLIC_SITE_URL ??
+    'http://localhost:3000'
 
-  const { error } = await supabase.auth.signInWithOtp({
-    email: parsed.data.email,
-  })
+  const { error } = await supabase.auth.resetPasswordForEmail(
+    parsed.data.email,
+    {
+      redirectTo: `${origin}/verify-reset-code?email=${encodeURIComponent(parsed.data.email)}`,
+    }
+  )
 
   if (error) {
     console.error(
@@ -293,7 +302,7 @@ export async function resetPasswordWithOtp(
   const { error: otpError } = await supabase.auth.verifyOtp({
     email: parsed.data.email,
     token_hash: parsed.data.code,
-    type: 'email',
+    type: 'recovery',
   })
 
   if (otpError) {
