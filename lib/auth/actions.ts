@@ -249,6 +249,16 @@ export async function sendResetOtp(
     }
   )
 
+  console.error(
+    '[sendResetOtp] recovery code requested:',
+    JSON.stringify({
+      email: parsed.data.email,
+      error: error?.message ?? null,
+      status: error?.status ?? null,
+      timestamp: new Date().toISOString(),
+    })
+  )
+
   if (error) {
     console.error(
       '[sendResetOtp] supabase auth error:',
@@ -286,11 +296,22 @@ export async function resetPasswordWithOtp(
   // template é o OTP numérico ("token"), não o hash do link ("token_hash"),
   // então usamos o parâmetro `token`. Isso cria uma sessão temporária no
   // cookie do navegador.
-  const { error: otpError } = await supabase.auth.verifyOtp({
+  const otpPayload = {
     email: parsed.data.email,
     token: parsed.data.code,
     type: 'recovery',
-  })
+  }
+  console.error(
+    '[resetPasswordWithOtp] calling verifyOtp:',
+    JSON.stringify({
+      email: otpPayload.email,
+      codeLength: otpPayload.token.length,
+      codePrefix: otpPayload.token.slice(0, 3) + '***', // não logar o código completo
+      type: otpPayload.type,
+    })
+  )
+
+  const { error: otpError, data: otpData } = await supabase.auth.verifyOtp(otpPayload)
 
   if (otpError) {
     console.error(
@@ -311,6 +332,15 @@ export async function resetPasswordWithOtp(
       error: `Código inválido ou expirado. Cada código pode ser usado apenas uma vez.${detail}`,
     }
   }
+
+  console.error(
+    '[resetPasswordWithOtp] verifyOtp success:',
+    JSON.stringify({
+      email: parsed.data.email,
+      hasSession: !!otpData?.session,
+      hasUser: !!otpData?.user,
+    })
+  )
 
   // 2. Redefine a senha enquanto a sessão temporária está ativa.
   const { error: pwError } = await supabase.auth.updateUser({
