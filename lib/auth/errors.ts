@@ -28,6 +28,7 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   session_expired: 'Sua sessão expirou. Solicite um novo link.',
   reauthentication_needed: 'Confirme sua identidade para continuar.',
   otp_expired: 'Este link expirou. Solicite um novo.',
+  invalid_otp: 'Código inválido ou expirado. Solicite um novo.',
 }
 
 // `over_email_send_rate_limit` cobre duas situações diferentes no Supabase:

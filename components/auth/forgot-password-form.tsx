@@ -4,7 +4,8 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { forgotPassword } from '@/lib/auth/actions'
+import { useRouter } from 'next/navigation'
+import { sendResetOtp } from '@/lib/auth/actions'
 import {
   forgotPasswordSchema,
   type ForgotPasswordInput,
@@ -23,8 +24,8 @@ import { t } from '@/lib/strings'
 
 export function ForgotPasswordForm({ ...props }: React.ComponentProps<typeof Card>) {
   const [serverError, setServerError] = useState('')
-  const [sent, setSent] = useState(false)
   const [isPending, startTransition] = useTransition()
+  const router = useRouter()
 
   const {
     register,
@@ -39,16 +40,15 @@ export function ForgotPasswordForm({ ...props }: React.ComponentProps<typeof Car
     setServerError('')
     startTransition(async () => {
       try {
-        const result = await forgotPassword(values)
+        const result = await sendResetOtp(values)
         if ('error' in result) {
           setServerError(result.error)
         } else {
-          setSent(true)
+          router.push(
+            `/verify-reset-code?email=${encodeURIComponent(values.email)}`
+          )
         }
       } catch {
-        // A Server Action pode falhar antes de responder (deploy novo, rede,
-        // sessão expirada). Sem isto a rejeição sobe como erro não tratado no
-        // console e o usuário fica sem feedback.
         setServerError(t.auth.forgotPassword.failed)
       }
     })
@@ -63,60 +63,43 @@ export function ForgotPasswordForm({ ...props }: React.ComponentProps<typeof Car
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {sent ? (
-          <div className="grid gap-4">
+        <form onSubmit={onSubmit} noValidate className="grid gap-4">
+          {serverError && (
             <div
-              role="status"
-              className="rounded-md bg-success/10 p-3 text-sm text-success"
+              role="alert"
+              className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
             >
-              {t.auth.forgotPassword.sent}
+              {serverError}
             </div>
-            <Link
-              href="/login"
-              className="text-center text-sm underline underline-offset-4"
-            >
+          )}
+
+          <div className="grid gap-2">
+            <Label htmlFor="forgot-email">{t.common.email}</Label>
+            <Input
+              id="forgot-email"
+              type="email"
+              placeholder={t.common.emailPlaceholder}
+              autoComplete="email"
+              aria-invalid={!!errors.email}
+              {...register('email')}
+            />
+            {errors.email && (
+              <p className="text-xs text-destructive">{errors.email.message}</p>
+            )}
+          </div>
+
+          <Button type="submit" disabled={isPending} className="w-full">
+            {isPending
+              ? t.auth.forgotPassword.sending
+              : t.auth.forgotPassword.submit}
+          </Button>
+
+          <div className="text-center text-sm">
+            <Link href="/login" className="underline underline-offset-4">
               {t.auth.forgotPassword.backToLogin}
             </Link>
           </div>
-        ) : (
-          <form onSubmit={onSubmit} noValidate className="grid gap-4">
-            {serverError && (
-              <div
-                role="alert"
-                className="rounded-md bg-destructive/10 p-3 text-sm text-destructive"
-              >
-                {serverError}
-              </div>
-            )}
-
-            <div className="grid gap-2">
-              <Label htmlFor="forgot-email">{t.common.email}</Label>
-              <Input
-                id="forgot-email"
-                type="email"
-                placeholder={t.common.emailPlaceholder}
-                autoComplete="email"
-                aria-invalid={!!errors.email}
-                {...register('email')}
-              />
-              {errors.email && (
-                <p className="text-xs text-destructive">{errors.email.message}</p>
-              )}
-            </div>
-
-            <Button type="submit" disabled={isPending} className="w-full">
-              {isPending
-                ? t.auth.forgotPassword.sending
-                : t.auth.forgotPassword.submit}
-            </Button>
-
-            <div className="text-center text-sm">
-              <Link href="/login" className="underline underline-offset-4">
-                {t.auth.forgotPassword.backToLogin}
-              </Link>
-            </div>
-          </form>
-        )}
+        </form>
       </CardContent>
     </Card>
   )
