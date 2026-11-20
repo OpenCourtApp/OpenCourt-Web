@@ -183,6 +183,8 @@ Para funcionar, a aplicação depende de serviços externos:
   principal) ou com Google (OAuth/PKCE, facilitador opcional).
 - **Perfis e configurações** — avatares, troca de instituição, preferências de
   notificação e gerenciamento de quadras por organização.
+- **Recuperação de senha** — envio de código OTP numérico por e-mail para
+  redefinição de senha, com validade de 1 hora.
 
 ---
 
@@ -369,8 +371,9 @@ um push em `main` dispara o deploy de produção.
 - **Reservas** ocupam uma quadra em uma janela de data/hora; sobreposições são
   rejeitadas.
 
-Papéis: `principal` (controle total, não pode ser removido), `teacher`,
-`student_rep`.
+Papéis: `principal` (controle total, pode excluir contas e escolas), `teacher`,
+`student_rep` (não podem excluir conta própria — a exclusão é solicitada ao
+diretor da escola).
 
 ---
 
