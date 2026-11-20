@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { PasswordInput } from '@/components/ui/password-input'
 import {
   Card,
   CardContent,
@@ -111,9 +112,8 @@ export function VerifyOtpForm({
 
           <div className="grid gap-2">
             <Label htmlFor="otp-password">{t.common.password}</Label>
-            <Input
+            <PasswordInput
               id="otp-password"
-              type="password"
               autoComplete="new-password"
               aria-invalid={!!errors.password}
               {...register('password')}
@@ -129,9 +129,8 @@ export function VerifyOtpForm({
             <Label htmlFor="otp-confirm-password">
               {t.auth.verifyOtp.confirmPassword}
             </Label>
-            <Input
+            <PasswordInput
               id="otp-confirm-password"
-              type="password"
               autoComplete="new-password"
               aria-invalid={!!errors.confirmPassword}
               {...register('confirmPassword')}

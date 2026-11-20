@@ -26,6 +26,7 @@ const NO_ONBOARDING_PATHS = [
   '/onboarding',
   '/welcome',
   '/account/delete-confirmation',
+  '/forgot-password',
 ]
 
 function isPublicPath(pathname: string): boolean {
