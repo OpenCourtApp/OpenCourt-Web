@@ -45,15 +45,20 @@ export const forgotPasswordSchema = z.object({
   email,
 })
 
-export const resetPasswordSchema = z
-  .object({
-    password,
-    confirmPassword: z.string().min(1, 'Confirme sua nova senha.'),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'As senhas não coincidem.',
-    path: ['confirmPassword'],
-  })
+export const verifyOtpSchema = z.object({
+  email,
+  code: z.string().min(6, 'Informe o código de 6 dígitos.'),
+})
+
+export const resetPasswordWithOtpSchema = z.object({
+  email,
+  code: z.string().min(6, 'Informe o código de 6 dígitos.'),
+  password,
+  confirmPassword: z.string().min(1, 'Confirme sua nova senha.'),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: 'As senhas não coincidem.',
+  path: ['confirmPassword'],
+})
 
 // Server-side schema. Password is optional here ONLY because Google OAuth
 // invitees authenticate via Google and submit no password — the action checks
@@ -82,4 +87,5 @@ export type CreateSchoolInput      = z.infer<typeof createSchoolSchema>
 export type AcceptInvitationInput  = z.infer<typeof acceptInvitationSchema>
 export type InviteMemberInput      = z.infer<typeof inviteMemberSchema>
 export type ForgotPasswordInput    = z.infer<typeof forgotPasswordSchema>
-export type ResetPasswordInput     = z.infer<typeof resetPasswordSchema>
+export type VerifyOtpInput         = z.infer<typeof verifyOtpSchema>
+export type ResetPasswordWithOtpInput = z.infer<typeof resetPasswordWithOtpSchema>

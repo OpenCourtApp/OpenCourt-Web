@@ -12,16 +12,17 @@ import {
   EMAIL_ALREADY_EXISTS_PASSWORD,
   PRINCIPAL_CANNOT_DELETE_ACCOUNT,
 } from '@/lib/auth/errors'
-import { headers } from 'next/headers'
 import {
   acceptInvitationSchema,
   createSchoolSchema,
   forgotPasswordSchema,
-  resetPasswordSchema,
+  resetPasswordWithOtpSchema,
   signInSchema,
   signUpSchema,
+  verifyOtpSchema,
   type CreateSchoolInput,
   type ForgotPasswordInput,
+  type ResetPasswordWithOtpInput,
   type SignInInput,
   type SignUpInput,
 } from '@/lib/auth/validation'
@@ -213,38 +214,36 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
 // verifier + cross-origin redirect) — see components/google-sign-in-button.tsx.
 // The /auth/callback route handles exchangeCodeForSession server-side.
 
-export type ForgotPasswordResult = { success: true } | { error: string }
-
 /**
- * Envia o e-mail de recuperação de senha pelo Supabase Auth.
+ * Resultado do envio de código de recuperação por OTP.
  * Sempre retorna sucesso quando o e-mail é válido, para não revelar se a conta
  * existe (evita enumeração de e-mails).
  */
-export async function forgotPassword(
+export type SendResetOtpResult = { success: true } | { error: string }
+
+/**
+ * Envia um código de 6 dígitos por e-mail para recuperação de senha.
+ * Usa signInWithOtp do Supabase Auth, que dispara o email com o código.
+ * O corpo do email deve conter apenas {{ .Token }} como texto puro (sem link),
+ * para que o rastreamento de cliques da Brevo não corrompa o código.
+ */
+export async function sendResetOtp(
   input: ForgotPasswordInput
-): Promise<ForgotPasswordResult> {
+): Promise<SendResetOtpResult> {
   const parsed = forgotPasswordSchema.safeParse(input)
   if (!parsed.success) {
     return { error: 'Insira um endereço de email válido.' }
   }
 
   const supabase = await createClient()
-  const origin =
-    (await headers()).get('origin') ??
-    process.env.NEXT_PUBLIC_SITE_URL ??
-    'http://localhost:3000'
 
-  const { error } = await supabase.auth.resetPasswordForEmail(parsed.data.email, {
-    // O callback troca o token de recuperação por uma sessão e então
-    // redireciona para a página onde o usuário define a nova senha.
-    redirectTo: `${origin}/auth/callback?next=/reset-password`,
+  const { error } = await supabase.auth.signInWithOtp({
+    email: parsed.data.email,
   })
 
   if (error) {
-    // Loga o código real no servidor: sem isso, um erro fora do mapa de
-    // mensagens amigáveis vira um "algo deu errado" impossível de diagnosticar.
     console.error(
-      '[forgotPassword] supabase auth error:',
+      '[sendResetOtp] supabase auth error:',
       error.code ?? '(sem código)',
       error.status,
       error.message
@@ -255,20 +254,25 @@ export async function forgotPassword(
   return { success: true }
 }
 
-export type ResetPasswordState = { error: string } | null
-
 /**
- * Define a nova senha a partir da sessão criada pelo callback de recuperação
- * (verifyOtp com type=recovery). O usuário chega aqui já autenticado.
+ * Verifica o código OTP de 6 dígitos, cria uma sessão temporária e
+ * redefine a senha do usuário. Após a redefinição, encerra a sessão para
+ * não deixar o usuário autenticado com um token de uso único.
  */
-export async function resetPassword(
-  _prevState: ResetPasswordState,
+export type ResetPasswordWithOtpState = { error: string } | null
+
+export async function resetPasswordWithOtp(
+  _prevState: ResetPasswordWithOtpState,
   formData: FormData
-): Promise<ResetPasswordState> {
+): Promise<ResetPasswordWithOtpState> {
+  const rawEmail = formData.get('email')
+  const rawCode = formData.get('code')
   const rawPassword = formData.get('password')
   const rawConfirmPassword = formData.get('confirmPassword')
 
-  const parsed = resetPasswordSchema.safeParse({
+  const parsed = resetPasswordWithOtpSchema.safeParse({
+    email: typeof rawEmail === 'string' ? rawEmail : '',
+    code: typeof rawCode === 'string' ? rawCode : '',
     password: typeof rawPassword === 'string' ? rawPassword : '',
     confirmPassword:
       typeof rawConfirmPassword === 'string' ? rawConfirmPassword : '',
@@ -283,25 +287,32 @@ export async function resetPassword(
   }
 
   const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
 
-  if (!user) {
-    return {
-      error: 'Seu link de recuperação expirou. Solicite um novo e-mail.',
-    }
+  // 1. Valida o código OTP recebido por email. Isso cria uma sessão
+  // temporária no cookie do navegador.
+  const { error: otpError } = await supabase.auth.verifyOtp({
+    email: parsed.data.email,
+    token_hash: parsed.data.code,
+    type: 'email',
+  })
+
+  if (otpError) {
+    return { error: 'Código inválido ou expirado. Solicite um novo.' }
   }
 
-  const { error } = await supabase.auth.updateUser({
+  // 2. Redefine a senha enquanto a sessão temporária está ativa.
+  const { error: pwError } = await supabase.auth.updateUser({
     password: parsed.data.password,
   })
 
-  if (error) {
-    return { error: friendlyAuthError(error) }
+  if (pwError) {
+    return { error: friendlyAuthError(pwError) }
   }
 
-  redirect('/dashboard')
+  // 3. Encerra a sessão temporária: o usuário precisa logar com a nova senha.
+  await supabase.auth.signOut()
+
+  redirect('/login')
 }
 
 export type AccountDeletionStatus = {
