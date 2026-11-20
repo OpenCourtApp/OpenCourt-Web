@@ -8,8 +8,26 @@ export async function POST(req: Request) {
   try {
     const body = await req.json()
 
+    console.error(
+      '[verify-reset-otp] corpo recebido:',
+      JSON.stringify({
+        email: body.email,
+        emailType: typeof body.email,
+        code: body.code,
+        codeType: typeof body.code,
+        codeLength: body.code?.length,
+        password: body.password ? '***' : undefined,
+        passwordType: typeof body.password,
+        allKeys: Object.keys(body),
+      })
+    )
+
     const parsed = resetPasswordWithOtpSchema.safeParse(body)
     if (!parsed.success) {
+      console.error(
+        '[verify-reset-otp] falha na validação Zod:',
+        JSON.stringify(parsed.error.issues.map((i) => ({ path: i.path, message: i.message })))
+      )
       return NextResponse.json(
         { error: 'Verifique os campos do formulário e tente novamente.' },
         { status: 400 }
