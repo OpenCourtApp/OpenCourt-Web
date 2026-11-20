@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react'
 import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { resetPasswordWithOtp } from '@/lib/auth/actions'
 import {
   OTP_CODE_LENGTH,
   resetPasswordWithOtpSchema,
@@ -44,13 +43,32 @@ export function VerifyOtpForm({
     },
   })
 
-  const onSubmit = handleSubmit((values) => {
+  const onSubmit = handleSubmit(async (values) => {
     setServerError('')
     startTransition(async () => {
-      // Em caso de sucesso a action redireciona para /login.
-      const result = await resetPasswordWithOtp(values)
-      if (result?.error) {
-        setServerError(result.error)
+      try {
+        const response = await fetch('/api/verify-reset-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: values.email,
+            code: values.code,
+            password: values.password,
+          }),
+        })
+
+        const result = await response.json()
+
+        if (!response.ok) {
+          setServerError(result.error || 'Código inválido ou expirado.')
+          return
+        }
+
+        // Sucesso: redireciona para /login
+        window.location.href = '/login'
+      } catch (err) {
+        console.error('[verify-otp-form] fetch error:', err)
+        setServerError('Erro interno do servidor. Tente novamente.')
       }
     })
   })

@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   '/api/test-recovery',
   '/api/test-verify-otp',
   '/api/test-verify-direct',
+  '/api/verify-reset-otp',
 ]
 
 // Páginas de auth que também devem ser acessíveis quando já há sessão
