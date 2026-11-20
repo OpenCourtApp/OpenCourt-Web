@@ -8,9 +8,6 @@ const PUBLIC_PATHS = [
   '/verify-reset-code',
   '/auth/callback',
   '/api/ping',
-  '/api/test-recovery',
-  '/api/test-verify-otp',
-  '/api/test-verify-direct',
   '/api/verify-reset-otp',
 ]
 
