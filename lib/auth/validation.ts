@@ -47,12 +47,12 @@ export const forgotPasswordSchema = z.object({
 
 export const verifyOtpSchema = z.object({
   email,
-  code: z.string().min(6, 'Informe o código de 6 dígitos.'),
+  code: z.string().regex(/^\d+$/, 'Informe apenas dígitos numéricos.').min(1, 'Informe o código de recuperação.'),
 })
 
 export const resetPasswordWithOtpSchema = z.object({
   email,
-  code: z.string().min(6, 'Informe o código de 6 dígitos.'),
+  code: z.string().regex(/^\d+$/, 'Informe apenas dígitos numéricos.').min(1, 'Informe o código de recuperação.'),
   password,
   confirmPassword: z.string().min(1, 'Confirme sua nova senha.'),
 }).refine((data) => data.password === data.confirmPassword, {

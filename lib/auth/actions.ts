@@ -222,7 +222,7 @@ export async function signUp(input: SignUpInput): Promise<AuthActionResult> {
 export type SendResetOtpResult = { success: true } | { error: string }
 
 /**
- * Envia um código de 6 dígitos por e-mail para recuperação de senha.
+ * Envia um código de recuperação por e-mail para recuperação de senha.
  * Usa signInWithOtp do Supabase Auth, que dispara o email com o código.
  * O corpo do email deve conter apenas {{ .Token }} como texto puro (sem link),
  * para que o rastreamento de cliques da Brevo não corrompa o código.
@@ -255,7 +255,7 @@ export async function sendResetOtp(
 }
 
 /**
- * Verifica o código OTP de 6 dígitos, cria uma sessão temporária e
+ * Verifica o código OTP recebido por email, cria uma sessão temporária e
  * redefine a senha do usuário. Após a redefinição, encerra a sessão para
  * não deixar o usuário autenticado com um token de uso único.
  */

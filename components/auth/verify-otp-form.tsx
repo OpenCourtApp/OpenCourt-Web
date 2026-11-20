@@ -84,8 +84,8 @@ export function VerifyOtpForm({
             <Input
               id="otp-code"
               type="text"
-              maxLength={6}
-              placeholder="123456"
+              maxLength={10}
+              placeholder="12345678"
               autoComplete="otp"
               aria-invalid={!!errors.code}
               {...register('code')}
