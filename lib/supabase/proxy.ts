@@ -5,7 +5,7 @@ const PUBLIC_PATHS = [
   '/login',
   '/register',
   '/forgot-password',
-  '/reset-password',
+  '/verify-reset-code',
   '/auth/callback',
   '/api/ping',
 ]
@@ -13,7 +13,7 @@ const PUBLIC_PATHS = [
 // Páginas de auth que também devem ser acessíveis quando já há sessão
 // (ex.: a sessão temporária de recovery criada pelo callback), sem o
 // redirect automático para /dashboard.
-const AUTH_FLOW_PATHS = ['/auth/callback', '/reset-password']
+const AUTH_FLOW_PATHS = ['/auth/callback', '/verify-reset-code']
 
 // Páginas acessíveis mesmo sem escola ativa. `/account/delete-confirmation` é
 // o destino após um principal excluir a própria escola: ali ele pode excluir a
